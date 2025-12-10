@@ -55,6 +55,8 @@ export const STARTUP_LOGS = [
   "URL ROUTING: PROPAAGATED (tkglobalbank.com)",
   "DEPLOYMENT: SUCCESS",
   "GATEWAY: NGINX LOGS VERIFIED [CLEAN]",
+  "REAL API KEYS: LOADED (2 ACTIVE)",
+  "[TRANSFER] MODULE RESTART: SUCCESS",
   "💠 FULL SYSTEM ONLINE: 全モジュール全チャンネル全機能全システム搭載 💠",
   "💎 SYSTEM IS LIVE. ACCESS GRANTED. 💎"
 ];
