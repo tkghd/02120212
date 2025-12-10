@@ -8,7 +8,7 @@ export interface SystemModule {
   name: string;
   command: string;
   status: ServiceStatus;
-  type: 'core' | 'ai' | 'finance' | 'interface' | 'utility';
+  type: 'core' | 'ai' | 'finance' | 'interface' | 'utility' | 'business' | 'deployment';
   uptime?: string;
   cpu: number;
   memory: number;

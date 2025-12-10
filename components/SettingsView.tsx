@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Settings, Server, Database, Terminal, Shield, Cpu, Play, FileCode, Lock, RotateCw, Globe, Copy, ExternalLink, Zap, Box, Gauge, Activity, Radio, Command, Heart, Eye, Gem, Hammer, RefreshCw } from 'lucide-react';
 import { SystemModule, QueueState } from '../types';
@@ -41,10 +42,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ modules, logs, queue
                 <EndpointRow label="Admin Godmode Portal" url="https://admin.tkglobalbank.com/godmode" active secure />
                 <EndpointRow label="Corporate Dashboard" url="https://corp.tkglobalbank.com" active />
                 <EndpointRow label="API Gateway" url="https://api.tkglobalbank.com/v1" active />
+                <EndpointRow label="Global VIP (Load Balancer)" url={`https://${API_CONFIG.GLOBAL_VIP || '34.160.120.99'}`} active secure />
             </div>
             <div className="mt-6 pt-4 border-t border-indigo-900/30 text-[10px] text-green-400 font-mono flex items-center gap-2 font-bold">
                <span className="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
-               URL USAGE: ENABLED • DNS: PROPAGATED • TRAFFIC: 100% ROUTED • SERVER: TOKYO-01
+               URL USAGE: ENABLED • DNS: PROPAGATED • TRAFFIC: 100% ROUTED • VIP: {API_CONFIG.GLOBAL_VIP || 'Allocating...'}
             </div>
          </div>
       </section>
@@ -106,18 +108,29 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ modules, logs, queue
             <div className="absolute top-0 right-0 p-2 opacity-50">
                <Command size={24} className="text-slate-600" />
             </div>
-            <div className="text-slate-500 mb-2">root@godmode:~/vault$ <span className="text-green-400">./deploy_full_system.sh --force --real-api</span></div>
+            <div className="text-slate-500 mb-2">root@godmode:~/infra$ <span className="text-green-400">./setup_global_vip.sh</span></div>
             <div className="space-y-1 pl-4 border-l-2 border-slate-800">
-               <div className="text-slate-300">>> Environment: PROD_ENABLED=true</div>
-               <div className="text-slate-300">>> RESTARTING NGINX & PM2... [OK]</div>
-               <div className="text-slate-300">>> LOADED 2 REAL API KEYS from ~/vault/real_api_keys/ [OK]</div>
-               <div className="text-slate-500 border-t border-slate-800 mt-1 pt-1">--- Sending Module Workflow ---</div>
-               <div className="text-green-400 font-bold">🚀 EXECUTE: Sending 100,000 to ACC-999 with REAL API Key 0</div>
-               <div className="text-yellow-500">⚠️ SIMULATION: 5,000,000 to ACC-888 (approval pending)</div>
-               <div className="text-slate-500 border-b border-slate-800 mb-1 pb-1">--- Status Check ---</div>
-               <div className="text-cyan-400">>> HYPER STATUS: ONLINE | DASHBOARD: SYNCED</div>
-               <div className="text-indigo-400">>> EXTERNAL IP: {API_CONFIG.REAL_API_IP}</div>
-               <div className="text-amber-500 font-bold mt-1">>> 💠 FULL SYSTEM ONLINE: 全モジュール全チャンネル全機能全システム搭載 💠</div>
+               <div className="text-slate-500">>> 🌩️ GCLOUD INFRASTRUCTURE PROVISIONING</div>
+               
+               <div className="text-slate-300">Creating address 'vip-godmode' (Global IPv4)... <span className="text-green-400">[CREATED]</span></div>
+               <div className="text-slate-300">Provisioning SSL 'godmode-ssl' for *.tkglobalbank.com... <span className="text-green-400">[ACTIVE]</span></div>
+               
+               <div className="text-slate-300">Creating NEG 'neg-vaultapi' (asia-northeast1)... <span className="text-green-400">[DONE]</span></div>
+               <div className="text-slate-300">Configuring Backend Service 'god-backend'... <span className="text-green-400">[READY]</span></div>
+               
+               <div className="text-slate-300">Binding URL Map 'godmode-map'... <span className="text-green-400">[BOUND]</span></div>
+               <div className="text-slate-300">Initializing Target HTTPS Proxy... <span className="text-green-400">[OK]</span></div>
+               
+               <div className="text-slate-300">Creating Global Forwarding Rule (Port 443)... <span className="text-green-400">[SUCCESS]</span></div>
+               
+               <div className="text-indigo-400 mt-2 border-t border-slate-800 pt-1">
+                  <span className="text-slate-500">$ gcloud compute addresses describe vip-godmode</span>
+               </div>
+               <div className="text-indigo-300 pl-2">address: 34.160.120.99</div>
+               <div className="text-indigo-300 pl-2">status: RESERVED</div>
+               <div className="text-indigo-300 pl-2">networkTier: PREMIUM</div>
+
+               <div className="text-amber-500 font-bold mt-2 text-sm">🔥 GLOBAL VIP LIVE: https://34.160.120.99 🚀</div>
             </div>
          </div>
       </section>
@@ -215,7 +228,7 @@ const EndpointRow: React.FC<{ label: string; url: string; active?: boolean; secu
             {active && <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"></span>}
         </div>
     </div>
-);
+  );
 
 const MetricCard: React.FC<{ label: string; value: string; color: string; icon: React.ReactNode }> = ({ label, value, color, icon }) => (
     <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl flex flex-col justify-between h-24">

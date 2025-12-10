@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, RefreshCw, Wallet, Zap, Copy, ExternalLink, Box, Crown, Sparkles, ArrowUp, ArrowDown, Filter, X, Maximize2, Tag, Share2, Info } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, RefreshCw, Wallet, Zap, Copy, ExternalLink, Box, Crown, Sparkles, ArrowUp, ArrowDown, Filter, X, Maximize2, Tag, Share2, Info, LogOut } from 'lucide-react';
 import { WalletState } from '../types';
 
 interface CryptoViewProps {
@@ -101,7 +101,7 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
   const [selectedNft, setSelectedNft] = useState<NFTItem | null>(null);
 
   // MetaMask State
-  const [isMetaMaskConnected, setIsMetaMaskConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   const updatePrices = useCallback(() => {
     setPrices(prev => ({
@@ -126,8 +126,14 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
   };
 
   const connectMetaMask = () => {
-    // Simulation
-    setIsMetaMaskConnected(true);
+    if (walletAddress) {
+      // Disconnect logic
+      setWalletAddress(null);
+    } else {
+      // Simulate Connection
+      // In a real app, this would use window.ethereum.request({ method: 'eth_requestAccounts' })
+      setWalletAddress("0x71C7656EC7ab88b098defB751B7401B5f6d89A2F");
+    }
   };
 
   // Simulate Live Ticker
@@ -254,10 +260,10 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
           </h2>
           <div className="flex items-center gap-2 mt-1">
              <p className="text-xs text-slate-500 font-mono">
-                Connected: <span className="text-green-400">ΩMAX Chain (Mainnet)</span>
+                Network: <span className="text-green-400">ΩMAX Chain (Mainnet)</span>
              </p>
-             {isMetaMaskConnected && (
-                 <span className="text-[10px] bg-[#f6851b]/20 text-[#f6851b] px-1.5 py-0.5 rounded border border-[#f6851b]/30 font-bold flex items-center gap-1">
+             {walletAddress && (
+                 <span className="text-[10px] bg-[#f6851b]/20 text-[#f6851b] px-1.5 py-0.5 rounded border border-[#f6851b]/30 font-bold flex items-center gap-1 animate-pulse">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" className="w-3 h-3" alt="MM" /> MetaMask Connected
                  </span>
              )}
@@ -273,10 +279,22 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
             </button>
             <button 
                 onClick={connectMetaMask}
-                className={`p-2 rounded-lg border transition-colors ${isMetaMaskConnected ? 'bg-[#f6851b]/20 text-[#f6851b] border-[#f6851b]/50' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white'}`}
-                title={isMetaMaskConnected ? "MetaMask Connected" : "Connect MetaMask"}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                  walletAddress 
+                  ? 'bg-red-900/20 text-red-400 border-red-900/50 hover:bg-red-900/40' 
+                  : 'bg-[#f6851b]/10 text-[#f6851b] border-[#f6851b]/30 hover:bg-[#f6851b]/20'
+                }`}
             >
-                <ExternalLink size={18} />
+                {walletAddress ? (
+                  <>
+                    <LogOut size={16} /> <span className="text-xs font-bold hidden sm:inline">Disconnect</span>
+                  </>
+                ) : (
+                  <>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" className="w-4 h-4" alt="MM" />
+                    <span className="text-xs font-bold">Connect</span>
+                  </>
+                )}
             </button>
         </div>
       </div>
@@ -301,8 +319,13 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
                <div className="flex items-center gap-2 text-green-400 text-sm font-bold bg-green-900/20 px-3 py-1.5 rounded-lg border border-green-500/20">
                   <TrendingUp size={16} /> +12.5% (24h)
                </div>
-               <div className="flex items-center gap-2 text-slate-400 text-sm bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
-                  <Copy size={14} /> 0x71...9A2F
+               <div className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border transition-all ${walletAddress ? 'bg-indigo-900/20 border-indigo-500/30 text-indigo-300' : 'bg-white/5 border-white/5 text-slate-500'}`}>
+                  <Copy size={14} /> 
+                  <span className="font-mono">
+                    {walletAddress 
+                      ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}` 
+                      : 'Not Connected'}
+                  </span>
                </div>
             </div>
          </div>
