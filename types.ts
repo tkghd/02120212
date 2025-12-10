@@ -44,11 +44,27 @@ export interface QueueState {
 export interface BusinessEntity {
   id: string;
   name: string;
-  type: string;
-  url: string;
+  role: string; // e.g. "統括管理", "銀行系サービス"
+  category: 'governance' | 'finance' | 'business';
+  url?: string;
   revenue: string;
   status: 'active' | 'optimizing' | 'maintenance';
   region: 'domestic' | 'global';
+}
+
+export interface LicenseData {
+  id: string;
+  name: string;
+  type: 'domestic' | 'global' | 'hybrid'; // Blue, Red, Purple
+  licenses: {
+    bank: boolean;
+    securities: boolean;
+    crypto: boolean;
+    insurance: boolean;
+  };
+  hash: string;
+  expiry: string;
+  auditStatus: string;
 }
 
 export interface OwnerAccount {

@@ -1,6 +1,6 @@
 
 
-import { SystemModule, WalletState, QueueState, BusinessEntity, OwnerAccount } from './types';
+import { SystemModule, WalletState, QueueState, BusinessEntity, OwnerAccount, LicenseData } from './types';
 
 export const INITIAL_MODULES: SystemModule[] = [
   { id: 'god_integrated', name: 'Integrated Core API', command: 'node integrated_server.js', status: 'online', type: 'core', cpu: 99, memory: 98 },
@@ -53,23 +53,53 @@ export const STARTUP_LOGS = [
   "💎 SYSTEM IS LIVE. ACCESS GRANTED. 💎"
 ];
 
+// Updated Business Portfolio based on user request
 export const BUSINESS_PORTFOLIO: BusinessEntity[] = [
-  // Domestic
-  { id: 'd1', name: 'AI Beauty Chat ①', type: 'AI/Video', url: 'https://chat1.tkghd.global', revenue: '¥99.9M/sec', status: 'active', region: 'domestic' },
-  { id: 'd2', name: 'AI Beauty Chat ②', type: 'AI/Video', url: 'https://chat2.tkghd.global', revenue: '¥99.9M/sec', status: 'active', region: 'domestic' },
-  { id: 'd3', name: 'Online Casino JP', type: 'Casino', url: 'https://casino1.tkghd.global', revenue: '¥999M/sec', status: 'active', region: 'domestic' },
-  { id: 'd4', name: 'Ad Media Network', type: 'Ads', url: 'https://ads.tkghd.global', revenue: '¥88.8M/sec', status: 'active', region: 'domestic' },
-  { id: 'd5', name: 'NFT Platform JP', type: 'NFT', url: 'https://nft.tkghd.global', revenue: '¥55.5M/sec', status: 'active', region: 'domestic' },
-  { id: 'd6', name: 'Adult Video JP', type: 'Adult', url: 'https://video1.tkghd.global', revenue: '¥77.7M/sec', status: 'active', region: 'domestic' },
-  { id: 'd7', name: 'Luxury Sexy Art', type: 'Art/NFT', url: 'https://art.tkghd.global', revenue: '¥44.4M/sec', status: 'active', region: 'domestic' },
+  // Governance
+  { id: 'hd1', name: 'TK-GLOBAL HD', role: '統括管理、全体戦略・ガバナンス', category: 'governance', revenue: '∞', status: 'active', region: 'global' },
   
-  // Global
-  { id: 'g1', name: 'Super AI Chat Global', type: 'AI/Video', url: 'https://global-chat.tkghd.global', revenue: '$9.9M/sec', status: 'active', region: 'global' },
-  { id: 'g2', name: 'Global Casino Royale', type: 'Casino', url: 'https://global-casino.tkghd.global', revenue: '$99M/sec', status: 'active', region: 'global' },
-  { id: 'g3', name: 'Adult Tube Network 01', type: 'Adult', url: 'https://tube1.tkghd.global', revenue: '$5.5M/sec', status: 'active', region: 'global' },
-  { id: 'g4', name: 'Adult Tube Network 02', type: 'Adult', url: 'https://tube2.tkghd.global', revenue: '$5.5M/sec', status: 'active', region: 'global' },
-  { id: 'g5', name: 'VR/AR Interactive', type: 'Tech', url: 'https://vr.tkghd.global', revenue: '$8.8M/sec', status: 'active', region: 'global' },
-  { id: 'g6', name: 'Global Invest Dashboard', type: 'Finance', url: 'https://vault.tkghd.global', revenue: '$999M/sec', status: 'active', region: 'global' },
+  // Finance & Capital
+  { id: 'f1', name: 'TK globalneo Bank Inc', role: '海外銀行・口座管理・国際送金', category: 'finance', revenue: '$999M/day', status: 'active', region: 'global' },
+  { id: 'f2', name: 'T-capital price', role: '投資・資産管理', category: 'finance', revenue: '$880M/day', status: 'active', region: 'global' },
+  { id: 'f3', name: 'T-capital bank', role: '銀行サービス（入出金・貸出）', category: 'finance', revenue: '¥500M/day', status: 'active', region: 'domestic' },
+  { id: 'f4', name: 'T-wallet money gate', role: 'デジタルウォレット・資金ゲート', category: 'finance', revenue: '¥300M/day', status: 'active', region: 'global' },
+  { id: 'f5', name: 'T/loan.finance', role: '融資・ローン・投資先管理', category: 'finance', revenue: '¥250M/day', status: 'active', region: 'domestic' },
+
+  // Business & Services
+  { id: 'b1', name: 'TK global hood', role: 'グローバル事業展開・拠点管理', category: 'business', revenue: '$50M/day', status: 'active', region: 'global' },
+  { id: 'b2', name: 'T-Enter price', role: 'エンタープライズ (B2B)', category: 'business', revenue: '¥80M/day', status: 'active', region: 'domestic' },
+  { id: 'b3', name: 'T-SIRE Japan', role: '日本向け特定事業', category: 'business', revenue: '¥120M/day', status: 'active', region: 'domestic' },
+];
+
+// License Registry Data
+export const LICENSE_REGISTRY: LicenseData[] = [
+  {
+    id: 'lic_dom_001',
+    name: 'K-secure trust (国内)',
+    type: 'domestic', // Blue
+    licenses: { bank: true, securities: true, crypto: true, insurance: true },
+    hash: 'sha256:ABCD1234EF567890...',
+    expiry: '2026-12-31',
+    auditStatus: 'blast -> audit lineage保存済'
+  },
+  {
+    id: 'lic_glo_001',
+    name: 'Meta-ledger global (国外)',
+    type: 'global', // Red
+    licenses: { bank: true, securities: true, crypto: true, insurance: true },
+    hash: 'sha256:EFGH5678IJ901234...',
+    expiry: '2026-12-31',
+    auditStatus: 'blast -> audit lineage保存済'
+  },
+  {
+    id: 'lic_hyb_001',
+    name: 'Predictive HUD bank (橋渡し)',
+    type: 'hybrid', // Purple
+    licenses: { bank: true, securities: true, crypto: true, insurance: true },
+    hash: 'sha256:IJKL9012MN345678...',
+    expiry: '2026-12-31',
+    auditStatus: 'blast -> audit lineage保存済'
+  }
 ];
 
 // Generate 350 Owner Accounts with Limit Break Balances

@@ -193,8 +193,8 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
 
       switch (sortConfig.key) {
         case 'name':
-          valA = a.name;
-          valB = b.name;
+          valA = a.name.toLowerCase();
+          valB = b.name.toLowerCase();
           break;
         case 'amount':
           valA = a.amountNum;
