@@ -100,6 +100,9 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
   const [nftFilter, setNftFilter] = useState<string>('All');
   const [selectedNft, setSelectedNft] = useState<NFTItem | null>(null);
 
+  // MetaMask State
+  const [isMetaMaskConnected, setIsMetaMaskConnected] = useState(false);
+
   const updatePrices = useCallback(() => {
     setPrices(prev => ({
       BTC: prev.BTC + (Math.random() * 100 - 40),
@@ -120,6 +123,11 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
       key,
       direction: current.key === key && current.direction === 'desc' ? 'asc' : 'desc'
     }));
+  };
+
+  const connectMetaMask = () => {
+    // Simulation
+    setIsMetaMaskConnected(true);
   };
 
   // Simulate Live Ticker
@@ -227,6 +235,14 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
 
   const nftFilters = ['All', 'Genesis Prime', 'Neo Tokyo', 'TKG Assets', 'God', 'Legendary', 'Epic', 'Rare'];
 
+  // DeFi Data
+  const DEFI_DATA = [
+      { id: '1', name: 'T-Capital Staking', platform: 'TKG Vault', apy: '9,999%', tvl: '$12.5B', reward: 'TKG', risk: 'Low' },
+      { id: '2', name: 'NeoBank Liquidity', platform: 'Uniswap V3', apy: '450%', tvl: '$5.2B', reward: 'ETH', risk: 'Medium' },
+      { id: '3', name: 'Global Lending', platform: 'AAVE TKG', apy: '125%', tvl: '$2.1B', reward: 'USDT', risk: 'Low' },
+      { id: '4', name: 'Corporate Bond Yield', platform: 'T-Enter', apy: '8.5%', tvl: '$500M', reward: 'USDC', risk: 'Minimal' },
+  ];
+
   return (
     <div className="space-y-6 pb-20 animate-in fade-in duration-500 relative">
       
@@ -236,9 +252,16 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <Zap className="text-amber-400" fill="currentColor" /> Crypto Wallet
           </h2>
-          <p className="text-xs text-slate-500 font-mono mt-1">
-            Connected: <span className="text-green-400">ΩMAX Chain (Mainnet)</span>
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+             <p className="text-xs text-slate-500 font-mono">
+                Connected: <span className="text-green-400">ΩMAX Chain (Mainnet)</span>
+             </p>
+             {isMetaMaskConnected && (
+                 <span className="text-[10px] bg-[#f6851b]/20 text-[#f6851b] px-1.5 py-0.5 rounded border border-[#f6851b]/30 font-bold flex items-center gap-1">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" className="w-3 h-3" alt="MM" /> MetaMask Connected
+                 </span>
+             )}
+          </div>
         </div>
         <div className="flex gap-2">
             <button 
@@ -248,7 +271,11 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
             >
                 <RefreshCw size={18} />
             </button>
-            <button className="p-2 bg-slate-800/50 rounded-lg text-slate-400 border border-slate-700 hover:text-white transition-colors">
+            <button 
+                onClick={connectMetaMask}
+                className={`p-2 rounded-lg border transition-colors ${isMetaMaskConnected ? 'bg-[#f6851b]/20 text-[#f6851b] border-[#f6851b]/50' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white'}`}
+                title={isMetaMaskConnected ? "MetaMask Connected" : "Connect MetaMask"}
+            >
                 <ExternalLink size={18} />
             </button>
         </div>
@@ -304,10 +331,19 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
                <div className="flex gap-4">
                   <SortButton label="Name" active={sortConfig.key === 'name'} direction={sortConfig.direction} onClick={() => handleSort('name')} />
                </div>
-               <div className="flex gap-4">
+               <div className="flex items-center gap-4">
                   <SortButton label="Balance" active={sortConfig.key === 'amount'} direction={sortConfig.direction} onClick={() => handleSort('amount')} />
                   <SortButton label="Value" active={sortConfig.key === 'value'} direction={sortConfig.direction} onClick={() => handleSort('value')} />
                   <SortButton label="24h" active={sortConfig.key === 'change'} direction={sortConfig.direction} onClick={() => handleSort('change')} />
+                  
+                  {/* MANUAL REFRESH BUTTON IN TOKENS TAB */}
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleManualRefresh(); }}
+                    className={`ml-1 p-1 rounded transition-colors ${isRefreshing ? 'animate-spin text-amber-400' : 'text-slate-500 hover:text-white'}`}
+                    title="Refresh List"
+                  >
+                     <RefreshCw size={12} />
+                  </button>
                </div>
             </div>
 
@@ -379,48 +415,42 @@ export const CryptoView: React.FC<CryptoViewProps> = ({ wallet }) => {
       {/* DeFi VIEW */}
       {activeTab === 'defi' && (
           <div className="space-y-4 anim-enter-bottom">
-              <div className="p-5 rounded-2xl bg-gradient-to-r from-indigo-900/40 to-slate-900 border border-indigo-500/30">
-                  <div className="flex justify-between items-start mb-4">
+             {DEFI_DATA.map(defi => (
+                <div key={defi.id} className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-[#0a0a12] border border-slate-800 relative overflow-hidden group hover:border-indigo-500/30 transition-all">
+                    <div className="absolute top-0 right-0 w-20 h-full bg-gradient-to-l from-indigo-500/5 to-transparent"></div>
+                    
+                    <div className="flex justify-between items-start mb-4 relative z-10">
                       <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
                               <Sparkles size={20} />
                           </div>
                           <div>
-                              <div className="text-white font-bold">Godmode Staking Pool</div>
-                              <div className="text-xs text-indigo-300">Auto-Compounding</div>
+                              <div className="text-white font-bold">{defi.name}</div>
+                              <div className="text-xs text-indigo-300">{defi.platform}</div>
                           </div>
                       </div>
-                      <span className="text-2xl font-bold text-green-400 font-mono">9,999% APY</span>
-                  </div>
-                  <div className="bg-black/30 rounded-lg p-3 flex justify-between items-center mb-3">
-                      <span className="text-xs text-slate-400">Staked Amount</span>
-                      <span className="text-sm font-mono font-bold text-white">500,000 TKG</span>
-                  </div>
-                  <div className="bg-black/30 rounded-lg p-3 flex justify-between items-center">
-                      <span className="text-xs text-slate-400">Pending Rewards</span>
-                      <span className="text-sm font-mono font-bold text-amber-400 flex items-center gap-1">
-                          <Zap size={12} fill="currentColor" /> 12,450 TKG
-                      </span>
-                  </div>
-              </div>
+                      <div className="text-right">
+                          <span className="text-2xl font-bold text-green-400 font-mono block">{defi.apy}</span>
+                          <span className="text-[10px] text-slate-500 uppercase font-bold">APY</span>
+                      </div>
+                    </div>
 
-              <div className="p-5 rounded-2xl bg-gradient-to-r from-cyan-900/40 to-slate-900 border border-cyan-500/30">
-                  <div className="flex justify-between items-start mb-4">
-                      <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
-                              <RefreshCw size={20} />
-                          </div>
-                          <div>
-                              <div className="text-white font-bold">ETH / TKG Liquidity</div>
-                              <div className="text-xs text-cyan-300">Uniswap V3 (Godmode)</div>
-                          </div>
-                      </div>
-                      <span className="text-2xl font-bold text-green-400 font-mono">450% APR</span>
-                  </div>
-                  <button className="w-full py-3 bg-cyan-500/10 border border-cyan-500/50 rounded-xl text-cyan-400 font-bold hover:bg-cyan-500/20 transition-colors">
-                      Manage Position
-                  </button>
-              </div>
+                    <div className="grid grid-cols-3 gap-2 text-xs relative z-10">
+                        <div className="bg-black/30 rounded p-2 text-center">
+                            <div className="text-slate-500 mb-0.5">TVL</div>
+                            <div className="text-white font-mono">{defi.tvl}</div>
+                        </div>
+                        <div className="bg-black/30 rounded p-2 text-center">
+                            <div className="text-slate-500 mb-0.5">Reward</div>
+                            <div className="text-amber-400 font-bold">{defi.reward}</div>
+                        </div>
+                        <div className="bg-black/30 rounded p-2 text-center">
+                            <div className="text-slate-500 mb-0.5">Risk</div>
+                            <div className="text-green-400 font-bold">{defi.risk}</div>
+                        </div>
+                    </div>
+                </div>
+             ))}
           </div>
       )}
 

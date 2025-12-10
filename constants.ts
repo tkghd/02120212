@@ -1,5 +1,3 @@
-
-
 import { SystemModule, WalletState, QueueState, BusinessEntity, OwnerAccount, LicenseData } from './types';
 
 export const INITIAL_MODULES: SystemModule[] = [
@@ -21,6 +19,12 @@ export const INITIAL_MODULES: SystemModule[] = [
   { id: 'audit', name: 'Audit Module', command: 'node audit/index.js', status: 'online', type: 'utility', cpu: 18, memory: 28 },
   { id: 'license', name: 'License Module', command: 'node license/index.js', status: 'online', type: 'utility', cpu: 5, memory: 10 },
 ];
+
+export const API_CONFIG = {
+  REAL_API_IP: '35.226.88.195',
+  ZONE: 'us-central1-c',
+  INSTANCE_TYPE: 'n2-standard-8'
+};
 
 export const INITIAL_WALLET: WalletState = {
   jpy: '999,999,999,999,999,999', // INFINITE
@@ -50,6 +54,7 @@ export const STARTUP_LOGS = [
   "REALITY OVERWRITE: COMPLETE",
   "URL ROUTING: PROPAAGATED (tkglobalbank.com)",
   "DEPLOYMENT: SUCCESS",
+  "💠 FULL SYSTEM ONLINE: 全モジュール全チャンネル全機能全システム搭載 💠",
   "💎 SYSTEM IS LIVE. ACCESS GRANTED. 💎"
 ];
 

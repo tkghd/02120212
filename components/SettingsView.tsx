@@ -1,10 +1,9 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { Settings, Server, Database, Terminal, Shield, Cpu, Play, FileCode, Lock, RotateCw, Globe, Copy, ExternalLink, Zap, Box, Gauge, Activity, Radio, Command, Heart, Eye, Gem, Hammer, RefreshCw } from 'lucide-react';
 import { SystemModule, QueueState } from '../types';
 import { LogConsole } from './LogConsole';
 import { BusinessChecklist } from './BusinessChecklist';
+import { API_CONFIG } from '../constants';
 
 interface SettingsViewProps {
   modules: SystemModule[];
@@ -107,59 +106,61 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ modules, logs, queue
             <div className="absolute top-0 right-0 p-2 opacity-50">
                <Command size={24} className="text-slate-600" />
             </div>
-            <div className="text-slate-500 mb-2">root@godmode:~$ <span className="text-green-400">./deploy_godmode_ultimate.sh --force --cheat-engine --production</span></div>
+            <div className="text-slate-500 mb-2">root@godmode:~/vault$ <span className="text-green-400">sudo systemctl restart nginx && echo '💠 FULL SYSTEM ONLINE: 全モジュール全チャンネル全機能全システム搭載 💠' && curl -s ...</span></div>
             <div className="space-y-1 pl-4 border-l-2 border-slate-800">
-               <div className="text-green-600">>> EXECUTION STARTED [IMMEDIATE]</div>
-               <div className="text-green-600">>> RUST KERNEL: OPTIMIZED</div>
-               <div className="text-green-600">>> SECURITY GATES: OPEN</div>
-               <div className="text-amber-400 font-bold">>> DEPLOYMENT FINALIZED. SYSTEM IS LIVE.</div>
+               <div className="text-green-600">>> RESTARTING NGINX GATEWAY... [OK]</div>
+               <div className="text-cyan-400 font-bold my-1">>> 💠 FULL SYSTEM ONLINE: 全モジュール全チャンネル全機能全システム搭載 💠</div>
+               <div className="text-slate-400">>> API STATUS: 200 OK | DASHBOARD: ACTIVE</div>
+               <div className="text-indigo-400">>> EXTERNAL IP: {API_CONFIG.REAL_API_IP}</div>
+               <div className="text-amber-500 font-bold mt-1">>> SYSTEM INTEGRATION COMPLETE.</div>
             </div>
          </div>
       </section>
 
-      {/* RUST KERNEL DIAGNOSTICS */}
+      {/* API Network Monitor (Heartbeat Engine) */}
       <section>
-         <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4">
              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <Gauge size={16} /> Kernel Diagnostics
+                <Gauge size={16} /> API Network Monitor
              </h3>
-             <span className="text-[10px] font-mono text-orange-400 bg-orange-900/20 px-2 py-0.5 rounded border border-orange-900/50 flex items-center gap-1 animate-pulse">
-                <Zap size={10} /> RUST OPTIMIZED
+             <span className="text-[10px] font-mono text-green-400 bg-green-900/20 px-2 py-0.5 rounded border border-green-900/50 flex items-center gap-1 animate-pulse">
+                <Zap size={10} /> REAL-TIME
              </span>
          </div>
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-             <MetricCard label="Core Latency" value={`${latency.toFixed(2)}ms`} color="text-green-400" icon={<Activity size={16} />} />
-             <MetricCard label="Throughput" value="∞ TPS" color="text-indigo-400" icon={<Gauge size={16} />} />
-             <MetricCard label="Uptime" value="100.000%" color="text-purple-400" icon={<Server size={16} />} />
-             <MetricCard label="Security" value="GODMODE" color="text-amber-400" icon={<Shield size={16} />} />
-         </div>
-      </section>
-
-      {/* Embedded Godmode Dashboard */}
-      <section>
          <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+             <div className="space-y-2">
                 {modules.map(m => (
-                   <div key={m.id} className="flex justify-between items-center p-3 bg-slate-900/50 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
-                      <div className="flex items-center gap-3">
+                   <div key={m.id} className="grid grid-cols-12 gap-4 items-center p-3 bg-slate-900/50 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
+                      {/* Name & Status */}
+                      <div className="col-span-4 flex items-center gap-3">
                          <div className={`relative w-2.5 h-2.5 flex items-center justify-center`}>
                              {m.status === 'online' && <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>}
                              <div className={`relative w-2 h-2 rounded-full ${m.status === 'online' ? 'bg-green-500' : m.status === 'booting' ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
                          </div>
-                         <span className="text-xs font-bold text-slate-300 font-mono">{m.name}</span>
+                         <span className="text-xs font-bold text-slate-300 font-mono truncate">{m.name}</span>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-[10px] font-mono font-bold ${m.status === 'online' ? 'text-green-500' : 'text-indigo-500'}`}>{m.status.toUpperCase()}</span>
-                        {onRestart && (
-                          <button 
-                            onClick={() => onRestart(m.id)}
-                            disabled={true}
-                            className="p-1.5 bg-slate-800 text-slate-600 rounded cursor-not-allowed opacity-50"
-                            title="Restart Locked (Production)"
-                          >
-                            <RotateCw size={12} />
-                          </button>
-                        )}
+                      
+                      {/* Endpoint */}
+                      <div className="col-span-4 text-[10px] font-mono text-slate-500 truncate">
+                        {m.endpoint || 'Internal Loopback'}
+                      </div>
+
+                      {/* Stats */}
+                      <div className="col-span-2 flex items-center gap-2 text-[10px] font-mono">
+                         <span className={m.latency && m.latency < 100 ? 'text-green-400' : 'text-yellow-400'}>
+                            {m.latency}ms
+                         </span>
+                         <span className="text-slate-600">|</span>
+                         <span className={m.httpStatus === 200 ? 'text-green-400' : 'text-red-400'}>
+                            {m.httpStatus || '---'}
+                         </span>
+                      </div>
+
+                      {/* Action */}
+                      <div className="col-span-2 flex justify-end">
+                         <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${m.status === 'online' ? 'bg-green-900/20 border-green-900 text-green-500' : 'bg-red-900/20 border-red-900 text-red-500'}`}>
+                            {m.status}
+                         </div>
                       </div>
                    </div>
                 ))}
