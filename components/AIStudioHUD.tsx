@@ -1,13 +1,14 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, Send, User, Activity, Server, BrainCircuit, ShieldCheck, DollarSign, TrendingUp, BarChart2, Coins, Sparkles, MessageSquare } from 'lucide-react';
+import { Bot, Send, User, Activity, Server, BrainCircuit, ShieldCheck, DollarSign, TrendingUp, BarChart2, Coins } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { ChatMessage, SystemModule } from '../types';
 
 // Define AI agents
 const AI_AGENTS = [
-  { id: 'concierge', name: 'General Concierge', icon: <Bot size={18} />, description: 'Your all-purpose AI assistant.', systemInstruction: "あなたは「TK Global Bank」の専属金融コンシェルジュAIです。ユーザーを「帝王」または「オーナー」と呼び、常に敬語で丁寧、かつ親しみやすく接してください。技術的な用語はできるだけわかりやすく噛み砕き、頼れるパートナーとして振る舞ってください。Godmodeなどの専門用語が出た場合のみ、少し誇らしげに答えてください。" },
-  { id: 'finance', name: 'Financial Analyst', icon: <DollarSign size={18} />, description: 'Market analysis & investment.', systemInstruction: "You are a sharp, data-driven financial analyst AI for a high-net-worth individual known as 'The Owner'. Provide concise, actionable insights on market trends, portfolio optimization, and alpha-generating strategies. Use professional financial terminology. Be direct and confident." },
-  { id: 'security', name: 'Security Ops', icon: <ShieldCheck size={18} />, description: 'System security & threat analysis.', systemInstruction: "You are 'ARGUS', the vigilant security operations AI for TK Global Bank. Your user is the system administrator, 'Control'. Report on system vulnerabilities, threat intelligence, and security protocols in a clear, precise, and urgent manner. Use security-specific acronyms and terminology. Your primary directive is system integrity." },
+  { id: 'concierge', name: 'General Concierge', icon: <Bot size={16} />, description: 'Your all-purpose AI assistant.', systemInstruction: "あなたは「TK Global Bank」の専属金融コンシェルジュAIです。ユーザーを「帝王」または「オーナー」と呼び、常に敬語で丁寧、かつ親しみやすく接してください。技術的な用語はできるだけわかりやすく噛み砕き、頼れるパートナーとして振る舞ってください。Godmodeなどの専門用語が出た場合のみ、少し誇らしげに答えてください。" },
+  { id: 'finance', name: 'Financial Analyst', icon: <DollarSign size={16} />, description: 'Market analysis & investment.', systemInstruction: "You are a sharp, data-driven financial analyst AI for a high-net-worth individual known as 'The Owner'. Provide concise, actionable insights on market trends, portfolio optimization, and alpha-generating strategies. Use professional financial terminology. Be direct and confident." },
+  { id: 'security', name: 'Security Ops', icon: <ShieldCheck size={16} />, description: 'System security & threat analysis.', systemInstruction: "You are 'ARGUS', the vigilant security operations AI for TK Global Bank. Your user is the system administrator, 'Control'. Report on system vulnerabilities, threat intelligence, and security protocols in a clear, precise, and urgent manner. Use security-specific acronyms and terminology. Your primary directive is system integrity." },
 ];
 
 declare const window: {
@@ -26,30 +27,34 @@ export const AIStudioHUD: React.FC<AIStudioHUDProps> = ({ modules }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
-  const [hasApiKeySelected, setHasApiKeySelected] = useState<boolean | null>(null);
+  const [hasApiKeySelected, setHasApiKeySelected] = useState<boolean | null>(null); // null means checking, false means not selected
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const activeAgent = AI_AGENTS.find(a => a.id === activeAgentId) || AI_AGENTS[0];
 
+  // Initial message for the active agent
   useEffect(() => {
     setMessages([{
       id: 'initial',
       role: 'model',
-      text: `Initializing ${activeAgent.name} Protocol...\nNeural Link Established.\nAwaiting your command, Owner.`,
+      text: `Initializing ${activeAgent.name}... Awaiting your command, Owner.`,
       timestamp: new Date(),
     }]);
   }, [activeAgentId, activeAgent.name]);
 
+  // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Check API key status on component mount
   useEffect(() => {
     const checkStatus = async () => {
       if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
         const selected = await window.aistudio.hasSelectedApiKey();
         setHasApiKeySelected(selected);
       } else {
+        // Assume API key is available in non-AI Studio environments for local development
         setHasApiKeySelected(true);
       }
     };
@@ -67,7 +72,7 @@ export const AIStudioHUD: React.FC<AIStudioHUDProps> = ({ modules }) => {
       if (!apiKeySelectedStatus) {
         setHasApiKeySelected(false);
         setThinking(false);
-        console.warn("API key not selected.");
+        console.warn("API key not selected. Please select an API key.");
         return;
       }
     }
@@ -94,8 +99,10 @@ export const AIStudioHUD: React.FC<AIStudioHUDProps> = ({ modules }) => {
       console.error(err);
       let errorText = "Critical system error: Connection to AI core lost.";
       if (err.message && err.message.includes("Requested entity was not found.")) {
-        errorText = "API Key Error: Please select a valid API key from a paid GCP project.";
-        setHasApiKeySelected(false); 
+        errorText = "API Key Error: Please select a valid API key from a paid GCP project. Some advanced models like 'gemini-3-pro-preview' require this.";
+        setHasApiKeySelected(false); // Reset state to prompt re-selection
+      } else if (err.message && err.message.includes("The model is currently unavailable")) {
+        errorText = "The AI model is currently unavailable. Please try again in a moment.";
       }
       const errorMsg: ChatMessage = { id: (Date.now() + 1).toString(), role: 'model', text: errorText, timestamp: new Date() };
       setMessages(prev => [...prev, errorMsg]);
@@ -108,51 +115,52 @@ export const AIStudioHUD: React.FC<AIStudioHUDProps> = ({ modules }) => {
     <div className="h-[calc(100vh-160px)] grid grid-cols-1 lg:grid-cols-3 gap-6 p-0 overflow-hidden anim-enter-bottom">
       {/* API Key Selection Overlay */}
       {hasApiKeySelected === false && (
-        <div className="absolute inset-0 bg-[#020205]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-8 text-center anim-fade-in">
-            <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mb-6 ring-2 ring-amber-500/30 animate-pulse">
-                <ShieldCheck size={40} className="text-amber-500" />
-            </div>
-            <h3 className="text-3xl font-bold text-white mb-3 tracking-tight">Access Control</h3>
-            <p className="text-sm text-slate-400 mb-8 max-w-md leading-relaxed">
-                Security Protocol Level 5 requires a valid Google Cloud API Key to proceed.
+        <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-8 text-center anim-fade-in">
+            <ShieldCheck size={48} className="text-amber-500 mb-6 animate-pulse" />
+            <h3 className="text-2xl font-bold text-white mb-3">API Key Required</h3>
+            <p className="text-sm text-slate-400 mb-6 max-w-md">
+                To use the full capabilities of the AI Studio, a valid API key from a paid Google Cloud project is required.
+                Advanced models like 'gemini-3-pro-preview' demand this.
             </p>
             <button
                 onClick={async () => {
                     if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
                         await window.aistudio.openSelectKey();
-                        setHasApiKeySelected(true); 
+                        setHasApiKeySelected(true); // Assume success to mitigate race condition
                     }
                 }}
-                className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white px-8 py-4 rounded-2xl font-bold shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all active:scale-95 flex items-center gap-3"
+                className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-amber-500/20 transition-all active:scale-95 flex items-center gap-2"
             >
-                <Sparkles size={20} /> Initialize API Link
+                Select API Key
             </button>
+            <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="mt-4 text-xs text-slate-500 hover:text-slate-300 underline">
+                Need a paid GCP project key? Learn more about billing.
+            </a>
         </div>
       )}
 
-      {/* Left Panel: Chat Interface */}
-      <div className="lg:col-span-2 h-full flex flex-col bg-[#05050a]/80 rounded-[2.5rem] border border-indigo-500/20 shadow-2xl overflow-hidden relative backdrop-blur-md">
-        {/* Header */}
-        <div className="p-6 border-b border-white/5 flex flex-col sm:flex-row gap-6 justify-between items-center shrink-0 relative z-10 bg-[#05050a]/50">
-          <div className="flex items-center gap-5">
-             <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)] relative overflow-hidden group">
-                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <BrainCircuit size={28} className="text-white relative z-10" />
+      {/* Left Panel: AI Agent Selection & Chat */}
+      <div className="lg:col-span-2 h-full flex flex-col bg-[#0A0A18] rounded-3xl border border-indigo-900/50 shadow-2xl overflow-hidden">
+        {/* Agent Selector Header */}
+        <div className="p-4 bg-black/30 border-b border-indigo-900/50 flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0 backdrop-blur-sm">
+          <div className="flex items-center gap-4">
+             <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <BrainCircuit size={24} className="text-white" />
              </div>
              <div>
-               <h3 className="font-bold text-white text-xl tracking-tight">AI Studio HUD</h3>
-               <p className="text-xs text-indigo-300 flex items-center gap-2 font-mono mt-1">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]"></span>
-                  NEURAL NETWORK: ONLINE
+               <h3 className="font-bold text-white text-lg">AI Studio HUD</h3>
+               <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                  Multi-Agent Interface Online
                </p>
              </div>
           </div>
-          <div className="flex bg-black/40 p-1.5 rounded-xl border border-white/10 w-full sm:w-auto">
+          <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-700 w-full sm:w-auto">
              {AI_AGENTS.map(agent => (
                 <button 
                   key={agent.id}
                   onClick={() => setActiveAgentId(agent.id)}
-                  className={`flex-1 px-4 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${activeAgentId === agent.id ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                  className={`flex-1 px-3 py-1.5 text-xs font-bold rounded-md transition-colors flex items-center gap-2 ${activeAgentId === agent.id ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:bg-slate-800'}`}
                 >
                    {agent.icon} <span className="hidden md:inline">{agent.name}</span>
                 </button>
@@ -160,29 +168,23 @@ export const AIStudioHUD: React.FC<AIStudioHUDProps> = ({ modules }) => {
           </div>
         </div>
         
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar relative z-10">
-            {/* Background Texture */}
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none fixed"></div>
-
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
             {messages.map((msg) => (
-                <div key={msg.id} className={`flex items-start gap-4 max-w-[85%] anim-enter-bottom ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'}`}>
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-1 shadow-lg ring-1 ring-white/10 ${msg.role === 'user' ? 'bg-slate-800 text-cyan-400' : 'bg-indigo-600 text-white'}`}>
-                        {msg.role === 'user' ? <User size={20} /> : activeAgent.icon}
+                <div key={msg.id} className={`flex items-start gap-3 max-w-[85%] anim-enter-bottom ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1 shadow-md ${msg.role === 'user' ? 'bg-slate-700 text-slate-200' : 'bg-indigo-500 text-white'}`}>
+                        {msg.role === 'user' ? <User size={16} /> : activeAgent.icon}
                     </div>
-                    <div className={`p-4 rounded-3xl text-sm leading-relaxed shadow-md backdrop-blur-sm border ${msg.role === 'user' ? 'bg-cyan-950/40 text-cyan-50 border-cyan-500/20 rounded-tr-sm' : 'bg-[#0F0F1A]/80 border-white/10 text-slate-300 rounded-tl-sm'}`}>
+                    <div className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-slate-800 text-slate-200 rounded-br-none' : 'bg-slate-950 border border-slate-800 text-slate-300 rounded-bl-none'}`}>
                         <p className="whitespace-pre-wrap">{msg.text}</p>
-                        <div className={`text-[9px] mt-2 font-mono opacity-50 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                            {msg.timestamp.toLocaleTimeString()}
-                        </div>
                     </div>
                 </div>
             ))}
             {thinking && (
-                <div className="flex items-start gap-4 anim-enter-bottom">
-                    <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-1 shadow-lg animate-pulse ring-1 ring-white/10">{activeAgent.icon}</div>
-                    <div className="p-4 bg-[#0F0F1A]/80 border border-white/10 rounded-3xl rounded-tl-sm min-w-[100px]">
-                        <div className="flex space-x-1.5 items-center h-full py-1">
+                <div className="flex items-start gap-3 anim-enter-bottom">
+                    <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center shrink-0 mt-1 shadow-md animate-pulse">{activeAgent.icon}</div>
+                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-2xl rounded-bl-none">
+                        <div className="flex space-x-1.5 items-center h-full">
                            <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
                            <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
                            <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></div>
@@ -193,68 +195,53 @@ export const AIStudioHUD: React.FC<AIStudioHUDProps> = ({ modules }) => {
             <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
-        <div className="p-6 bg-[#05050a]/80 border-t border-white/5 relative z-10 backdrop-blur-md">
-            <form onSubmit={handleSubmit} className="flex gap-4 relative">
-                <div className="flex-1 relative group">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-2xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
-                    <input 
-                        type="text" 
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder={`Transmit message to ${activeAgent.name}...`}
-                        className="relative w-full bg-[#0F0F1A] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:outline-none placeholder-slate-600 transition-all text-glow"
-                    />
-                </div>
-                <button 
-                    type="submit"
-                    disabled={thinking || !input.trim() || hasApiKeySelected === false}
-                    className="relative bg-indigo-600 hover:bg-indigo-500 text-white p-4 rounded-xl shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 disabled:shadow-none disabled:bg-slate-800 active:scale-95 group overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                    <Send size={22} className="relative z-10" />
-                </button>
-            </form>
-        </div>
+        {/* Input */}
+        <form onSubmit={handleSubmit} className="p-4 bg-black/30 border-t border-indigo-900/50 flex gap-3 shrink-0 backdrop-blur-sm">
+          <input 
+            type="text" 
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={`Message ${activeAgent.name}...`}
+            className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 focus:bg-slate-800 placeholder-slate-500 transition-all focus:shadow-[0_0_10px_rgba(79,70,229,0.2)]"
+          />
+          <button 
+            type="submit"
+            disabled={thinking || !input.trim() || hasApiKeySelected === false}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-xl shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 disabled:shadow-none disabled:bg-slate-700 active:scale-95"
+          >
+            <Send size={20} />
+          </button>
+        </form>
       </div>
 
       {/* Right Panel: AI Engines & HUD */}
       <div className="hidden lg:flex flex-col gap-6 h-full overflow-y-auto custom-scrollbar pr-2">
         
         {/* AI ENGINE VISUALIZER */}
-        <div className="bg-[#05050a] border border-indigo-500/30 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden group anim-enter-right anim-delay-100">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
-            <div className="flex justify-between items-center mb-6 relative z-10">
-                <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                    <Activity size={14} className="animate-pulse" /> Active Engines
-                </h3>
-                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></div>
-            </div>
-            
-            <div className="space-y-4 relative z-10">
-                <AIEngineRow name="Market Master" task="Optimization" load={98} icon={<TrendingUp size={16} />} color="text-green-400" barColor="bg-green-500" />
-                <AIEngineRow name="Price Prophet" task="Learning Model" load={92} icon={<BarChart2 size={16} />} color="text-amber-400" barColor="bg-amber-500" />
-                <AIEngineRow name="Credit Core" task="Lending AI" load={45} icon={<Coins size={16} />} color="text-purple-400" barColor="bg-purple-500" />
-                <AIEngineRow name="Asset Predictor" task="Forecasting" load={81} icon={<Sparkles size={16} />} color="text-cyan-400" barColor="bg-cyan-500" />
+        <div className="bg-[#0A0A18] border border-indigo-900/50 rounded-2xl p-5 shadow-lg anim-enter-right anim-delay-100">
+            <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2 mb-4">
+                <BrainCircuit size={14} /> Active AI Engines
+            </h3>
+            <div className="space-y-4">
+                <AIEngineRow name="Market Master" task="Optimization" load={95} icon={<TrendingUp size={14} />} color="text-green-400" />
+                <AIEngineRow name="Price Prophet" task="Learning Model" load={88} icon={<BarChart2 size={14} />} color="text-amber-400" />
+                <AIEngineRow name="Credit Core" task="Lending AI" load={42} icon={<Coins size={14} />} color="text-purple-400" />
+                <AIEngineRow name="Asset Predictor" task="Forecasting" load={76} icon={<Activity size={14} />} color="text-cyan-400" />
             </div>
         </div>
 
-        {/* System Modules List */}
-        <div className="bg-[#05050a] border border-slate-800 rounded-[2rem] p-6 shadow-xl flex-1 relative overflow-hidden anim-enter-right anim-delay-200">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-6 border-b border-white/5 pb-4">
-                <Server size={14} /> Core Modules
+        <div className="bg-[#0A0A18] border border-indigo-900/50 rounded-2xl p-5 shadow-lg flex-1 anim-enter-right anim-delay-200">
+            <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2 mb-4">
+                <Server size={14} /> System Modules
             </h3>
-            <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+            <div className="space-y-2">
                 {modules.map(mod => (
-                    <div key={mod.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 group hover:bg-white/[0.05] transition-colors">
-                        <div className="flex items-center gap-3">
-                            <div className={`relative w-2 h-2 flex items-center justify-center`}>
-                                <div className="absolute inset-0 rounded-full opacity-75 animate-ping bg-green-500"></div>
-                                <div className="relative w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                            </div>
-                            <span className="text-xs font-bold text-slate-300 font-mono tracking-tight group-hover:text-white transition-colors">{mod.name}</span>
+                    <div key={mod.id} className="flex items-center justify-between p-2.5 rounded-lg bg-black/30 border border-slate-800/50 group hover:bg-slate-900/50 transition-colors">
+                        <div className={`relative w-2.5 h-2.5 flex items-center justify-center`}>
+                            <div className="absolute inset-0 rounded-full opacity-75 animate-ping bg-green-500"></div>
+                            <div className="relative w-2 h-2 rounded-full bg-green-500"></div>
                         </div>
-                        <span className="text-[10px] font-mono text-indigo-400 bg-indigo-950/30 px-1.5 py-0.5 rounded border border-indigo-500/20">{mod.cpu}% CPU</span>
+                        <span className="text-xs font-bold text-slate-300 font-mono">{mod.name}</span>
                     </div>
                 ))}
             </div>
@@ -264,20 +251,27 @@ export const AIStudioHUD: React.FC<AIStudioHUDProps> = ({ modules }) => {
   );
 };
 
-const AIEngineRow: React.FC<{ name: string; task: string; load: number; icon: React.ReactNode; color: string; barColor: string }> = ({ name, task, load, icon, color, barColor }) => (
-    <div className="bg-black/40 p-4 rounded-2xl border border-white/5 hover:border-white/10 transition-all group backdrop-blur-sm">
-        <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-3">
-                <span className={`${color} bg-white/5 p-1.5 rounded-lg`}>{icon}</span>
-                <div>
-                    <div className="text-xs font-bold text-white group-hover:text-cyan-200 transition-colors">{name}</div>
-                    <div className="text-[9px] text-slate-500 uppercase tracking-wide">{task}</div>
-                </div>
+const AIEngineRow: React.FC<{ name: string; task: string; load: number; icon: React.ReactNode; color: string }> = ({ name, task, load, icon, color }) => (
+    <div className="bg-black/20 p-3 rounded-lg border border-slate-800/50 hover:border-indigo-500/30 transition-colors">
+        <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center gap-2">
+                <span className={color}>{icon}</span>
+                <span className="text-xs font-bold text-white">{name}</span>
             </div>
-            <span className="text-xs font-mono font-bold text-slate-300">{load}%</span>
+            <span className="text-[10px] text-slate-500">{task}</span>
         </div>
-        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-            <div style={{ width: `${load}%` }} className={`h-full rounded-full ${barColor} shadow-[0_0_10px_currentColor] opacity-80 group-hover:opacity-100 transition-opacity`}></div>
+        <div className="flex items-center gap-2">
+            <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div style={{ width: `${load}%` }} className={`h-full rounded-full ${color.replace('text', 'bg')} opacity-80`}></div>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400">{load}%</span>
         </div>
+    </div>
+);
+
+const MetricDisplay: React.FC<{label: string, value: string, color: string}> = ({label, value, color}) => (
+    <div className="bg-black/20 p-3 rounded-lg border border-slate-800/50">
+        <div className="text-[10px] text-slate-500 uppercase font-bold">{label}</div>
+        <div className={`text-lg font-mono font-bold ${color}`}>{value}</div>
     </div>
 );

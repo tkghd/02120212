@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Send, Building2, Search, ChevronRight, AlertCircle, ArrowRight, CheckCircle2, ChevronDown, RefreshCw, Wallet, ArrowLeft, CreditCard, History, User, Pencil, Landmark, ShieldCheck, Smartphone, Zap, Mail, QrCode, FileText, Fingerprint, Lock, Shield, Scan, Globe, AtSign } from 'lucide-react';
+import { Send, Building2, Search, ChevronRight, AlertCircle, ArrowRight, CheckCircle2, ChevronDown, RefreshCw, Wallet, ArrowLeft, CreditCard, History, User, Pencil, Landmark, ShieldCheck, Smartphone, Zap, Mail, QrCode, FileText, Fingerprint, Lock, Shield, Scan } from 'lucide-react';
 import { WalletState, OwnerAccount } from '../types';
 
 interface TransferViewProps {
@@ -8,7 +9,7 @@ interface TransferViewProps {
 }
 
 type TransferStep = 'method_select' | 'bank_select' | 'account_input' | 'amount_input' | 'confirm' | 'processing_auth' | 'complete';
-type TransferMethod = 'bank' | 'paypay' | 'cotra' | 'wise' | 'revolut';
+type TransferMethod = 'bank' | 'paypay' | 'cotra';
 
 const MAJOR_BANKS = [
   { id: 'sbi', name: '住信SBIネット銀行', short: '住信SBI', color: 'bg-[#13284c]' },
@@ -29,18 +30,6 @@ const MAJOR_BANKS = [
   { id: 'aeon', name: 'イオン銀行', short: 'イオン', color: 'bg-[#D0006F]' },
   { id: 'shinsei', name: 'SBI新生銀行', short: 'SBI新生', color: 'bg-[#004886]' },
   { id: 'gmo', name: 'GMOあおぞら', short: 'GMO', color: 'bg-[#00A1E9]' },
-  { id: 'saitama_resona', name: '埼玉りそな銀行', short: '埼玉りそな', color: 'bg-[#008d4c]' },
-  { id: 'suruga', name: 'スルガ銀行', short: 'スルガ', color: 'bg-[#005cac]' },
-  { id: 'shizuoka', name: '静岡銀行', short: '静岡', color: 'bg-[#f08300]' },
-  { id: 'kyoto', name: '京都銀行', short: '京都', color: 'bg-[#006934]' },
-  { id: 'hokuriku', name: '北陸銀行', short: '北陸', color: 'bg-[#da291c]' },
-  { id: '77', name: '七十七銀行', short: '77', color: 'bg-[#009688]' },
-  // Added requested banks
-  { id: 'hokkaido', name: '北海道銀行', short: '北海道', color: 'bg-[#007b43]' },
-  { id: 'gunma', name: '群馬銀行', short: '群馬', color: 'bg-[#005293]' },
-  { id: 'chugoku', name: '中国銀行', short: '中国', color: 'bg-[#d7000f]' },
-  { id: 'nishinippon', name: '西日本シティ銀行', short: '西日本C', color: 'bg-[#f39800]' },
-  { id: 'iyo', name: '伊予銀行', short: '伊予', color: 'bg-[#009944]' },
 ];
 
 export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccounts }) => {
@@ -54,9 +43,9 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   const [accountType, setAccountType] = useState<'普通' | '当座' | '貯蓄'>('普通');
   const [accountNumber, setAccountNumber] = useState('');
 
-  // Account Details (PayPay/Cotra/Wise/Revolut)
-  const [recipientId, setRecipientId] = useState(''); // Phone, ID, Email, Revtag
-  const [recipientType, setRecipientType] = useState<'phone' | 'id' | 'email' | 'revtag'>('phone');
+  // Account Details (PayPay/Cotra)
+  const [recipientId, setRecipientId] = useState(''); // Phone, ID, or Email
+  const [recipientType, setRecipientType] = useState<'phone' | 'id' | 'email'>('phone');
   
   // Amount & Sender
   const [amount, setAmount] = useState('');
@@ -79,11 +68,6 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
           setStep('bank_select');
       } else {
           setStep('account_input');
-          // Set default recipient type based on method
-          if (m === 'wise') setRecipientType('email');
-          else if (m === 'revolut') setRecipientType('revtag');
-          else if (m === 'paypay') setRecipientType('phone');
-          else setRecipientType('phone');
       }
   };
 
@@ -91,7 +75,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
     if (step === 'bank_select' && selectedBank) setStep('account_input');
     else if (step === 'account_input') {
         if (method === 'bank' && branchName && accountNumber.length >= 7) setStep('amount_input');
-        else if ((method !== 'bank') && recipientId.length > 3) setStep('amount_input');
+        else if ((method === 'paypay' || method === 'cotra') && recipientId.length > 3) setStep('amount_input');
     }
     else if (step === 'amount_input' && amount) setStep('confirm');
   };
@@ -150,7 +134,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
 
   // --- Render Header ---
   const renderHeader = (title: string) => (
-    <div className="flex items-center gap-4 mb-4 pt-2 sticky top-0 bg-[#020205]/95 z-20 py-4 border-b border-white/5 backdrop-blur-md">
+    <div className="flex items-center gap-4 mb-4 pt-2 sticky top-0 bg-[#05050a]/95 z-20 py-4 border-b border-white/5 backdrop-blur-md">
       {step !== 'method_select' && step !== 'complete' && step !== 'processing_auth' && (
         <button onClick={handleBack} className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors text-slate-300 hover:text-white">
           <ArrowLeft size={20} />
@@ -219,18 +203,18 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   // --- STEP 1: Method Selection ---
   if (step === 'method_select') {
     return (
-      <div className="anim-enter-right max-w-3xl mx-auto pb-28 relative">
+      <div className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
         {renderHeader('送金方法の選択')}
         
         {/* Source Selector */}
-        <div className="mb-8 bg-[#05050a] border border-slate-800 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden group hover:border-cyan-900/50 transition-colors">
-            <div className="absolute top-0 left-0 w-1.5 h-full bg-indigo-500"></div>
+        <div className="mb-8 bg-[#0f0f18] border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
             <label className="text-xs font-bold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
                <Wallet size={14} className="text-indigo-500" /> 出金口座 (Source)
             </label>
             <div className="relative group">
                 <select 
-                    className="w-full bg-[#0a0a12] border border-slate-700 rounded-xl py-4 px-4 pr-10 text-white appearance-none focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all cursor-pointer hover:bg-[#151520]"
+                    className="w-full bg-[#1a1a24] border border-slate-700 rounded-xl py-4 px-4 pr-10 text-white appearance-none focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all cursor-pointer hover:bg-[#20202e]"
                     value={selectedSource.id}
                     onChange={(e) => setSelectedSource(ownerAccounts.find(a => a.id === e.target.value) || ownerAccounts[0])}
                 >
@@ -249,90 +233,74 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
         </div>
 
         <div className="space-y-4">
-           {/* Bank */}
            <button 
              onClick={() => handleMethodSelect('bank')}
-             className="w-full p-5 rounded-[2rem] bg-[#0a0a12] border border-slate-800 hover:border-indigo-500/50 hover:shadow-[0_0_30px_rgba(79,70,229,0.1)] transition-all flex items-center justify-between group anim-enter-right anim-delay-100"
+             className="w-full p-6 rounded-[2rem] bg-gradient-to-r from-[#0f1520] to-[#0a0a12] border border-slate-800 hover:border-indigo-500/50 hover:shadow-[0_0_30px_rgba(79,70,229,0.1)] transition-all flex items-center justify-between group anim-enter-right anim-delay-100"
            >
               <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-indigo-900/20 text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Building2 size={24} />
+                 <div className="w-14 h-14 rounded-2xl bg-indigo-900/20 text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Building2 size={28} />
                  </div>
                  <div className="text-left">
-                    <div className="font-bold text-white text-base">銀行振込</div>
-                    <div className="text-xs text-slate-400">金融機関口座へ送金</div>
+                    <div className="font-bold text-white text-lg">銀行振込</div>
+                    <div className="text-xs text-slate-400">金融機関口座へ送金 (Zengin System)</div>
                  </div>
               </div>
-              <ChevronRight size={20} className="text-slate-600 group-hover:text-indigo-400 transition-colors" />
+              <ChevronRight size={24} className="text-slate-600 group-hover:text-indigo-400 transition-colors" />
            </button>
 
-           {/* PayPay */}
            <button 
              onClick={() => handleMethodSelect('paypay')}
-             className="w-full p-5 rounded-[2rem] bg-[#0a0a12] border border-slate-800 hover:border-red-500/50 hover:shadow-[0_0_30px_rgba(239,68,68,0.1)] transition-all flex items-center justify-between group anim-enter-right anim-delay-200"
+             className="w-full p-6 rounded-[2rem] bg-gradient-to-r from-[#1a0f0f] to-[#0a0a12] border border-slate-800 hover:border-red-500/50 hover:shadow-[0_0_30px_rgba(239,68,68,0.1)] transition-all flex items-center justify-between group anim-enter-right anim-delay-200"
            >
               <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-red-900/20 text-red-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Smartphone size={24} />
+                 <div className="w-14 h-14 rounded-2xl bg-red-900/20 text-red-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Smartphone size={28} />
                  </div>
                  <div className="text-left">
-                    <div className="font-bold text-white text-base">PayPay送金</div>
+                    <div className="font-bold text-white text-lg">PayPay送金</div>
                     <div className="text-xs text-slate-400">ID / 電話番号で即時送金</div>
                  </div>
               </div>
-              <ChevronRight size={20} className="text-slate-600 group-hover:text-red-400 transition-colors" />
+              <ChevronRight size={24} className="text-slate-600 group-hover:text-red-400 transition-colors" />
            </button>
 
-           {/* Cotra */}
            <button 
              onClick={() => handleMethodSelect('cotra')}
-             className="w-full p-5 rounded-[2rem] bg-[#0a0a12] border border-slate-800 hover:border-green-500/50 hover:shadow-[0_0_30px_rgba(34,197,94,0.1)] transition-all flex items-center justify-between group anim-enter-right anim-delay-300"
+             className="w-full p-6 rounded-[2rem] bg-gradient-to-r from-[#0f1a15] to-[#0a0a12] border border-slate-800 hover:border-green-500/50 hover:shadow-[0_0_30px_rgba(34,197,94,0.1)] transition-all flex items-center justify-between group anim-enter-right anim-delay-300"
            >
               <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-green-900/20 text-green-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <RefreshCw size={24} />
+                 <div className="w-14 h-14 rounded-2xl bg-green-900/20 text-green-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <RefreshCw size={28} />
                  </div>
                  <div className="text-left">
-                    <div className="font-bold text-white text-base">ことら送金</div>
-                    <div className="text-xs text-slate-400">10万円以下の個人間送金</div>
+                    <div className="font-bold text-white text-lg">ことら送金</div>
+                    <div className="text-xs text-slate-400">10万円以下の個人間送金手数料無料</div>
                  </div>
               </div>
-              <ChevronRight size={20} className="text-slate-600 group-hover:text-green-400 transition-colors" />
+              <ChevronRight size={24} className="text-slate-600 group-hover:text-green-400 transition-colors" />
            </button>
-
-           {/* Wise */}
-           <button 
-             onClick={() => handleMethodSelect('wise')}
-             className="w-full p-5 rounded-[2rem] bg-[#0a0a12] border border-slate-800 hover:border-lime-500/50 hover:shadow-[0_0_30px_rgba(132,204,22,0.1)] transition-all flex items-center justify-between group anim-enter-right anim-delay-500"
-           >
-              <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-lime-900/20 text-lime-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Globe size={24} />
-                 </div>
-                 <div className="text-left">
-                    <div className="font-bold text-white text-base">Wise</div>
-                    <div className="text-xs text-slate-400">International / Multi-currency</div>
-                 </div>
-              </div>
-              <ChevronRight size={20} className="text-slate-600 group-hover:text-lime-400 transition-colors" />
-           </button>
-
-           {/* Revolut */}
-           <button 
-             onClick={() => handleMethodSelect('revolut')}
-             className="w-full p-5 rounded-[2rem] bg-[#0a0a12] border border-slate-800 hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all flex items-center justify-between group anim-enter-right anim-delay-500"
-           >
-              <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Zap size={24} />
-                 </div>
-                 <div className="text-left">
-                    <div className="font-bold text-white text-base">Revolut</div>
-                    <div className="text-xs text-slate-400">Instant P2P / Global</div>
-                 </div>
-              </div>
-              <ChevronRight size={20} className="text-slate-600 group-hover:text-white transition-colors" />
-           </button>
+        </div>
+        
+        {/* Transaction History Teaser */}
+        <div className="mt-8 pt-6 border-t border-slate-800 anim-enter-bottom anim-delay-500">
+            <h3 className="text-sm font-bold text-slate-400 mb-4 flex items-center gap-2">
+                <History size={16} /> Recent Transfers
+            </h3>
+            <div className="space-y-2">
+                {[1,2].map(i => (
+                    <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs">TX</div>
+                            <div>
+                                <div className="text-sm text-white font-bold">Transfer #{9000+i}</div>
+                                <div className="text-[10px] text-slate-500">2 mins ago</div>
+                            </div>
+                        </div>
+                        <div className="text-sm font-mono text-indigo-400">-¥10,000</div>
+                    </div>
+                ))}
+            </div>
         </div>
       </div>
     );
@@ -341,7 +309,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   // --- STEP: Bank Selection ---
   if (step === 'bank_select') {
     return (
-      <div className="anim-enter-right max-w-3xl mx-auto pb-28 relative">
+      <div className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
         {renderHeader('金融機関の選択')}
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8">
@@ -349,15 +317,15 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
              <button 
                key={bank.id}
                onClick={() => { setSelectedBank(bank); handleNext(); }}
-               className="p-4 rounded-2xl border border-slate-800 bg-[#0a0a12] hover:bg-[#151520] hover:border-indigo-500/50 transition-all flex flex-col items-center gap-3 group h-28 justify-center active:scale-95 shadow-md"
+               className="p-4 rounded-xl border border-slate-800 bg-[#0f0f18] hover:bg-slate-800 hover:border-indigo-500/50 transition-all flex flex-col items-center gap-3 group h-28 justify-center active:scale-95"
              >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-xs font-bold ${bank.color} shadow-lg group-hover:scale-110 transition-transform ring-2 ring-white/5`}>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-xs font-bold ${bank.color} shadow-lg group-hover:scale-110 transition-transform`}>
                   {bank.short.substring(0, 2)}
                 </div>
                 <span className="text-xs font-bold text-slate-300 group-hover:text-white">{bank.short}</span>
              </button>
            ))}
-           <button className="p-4 rounded-2xl border border-dashed border-slate-700 hover:border-indigo-500 hover:bg-slate-800/30 transition-all flex flex-col items-center justify-center gap-2 group h-28">
+           <button className="p-4 rounded-xl border border-dashed border-slate-700 hover:border-indigo-500 hover:bg-slate-800/50 transition-all flex flex-col items-center justify-center gap-2 group h-28">
               <Search size={24} className="text-slate-500 group-hover:text-indigo-400" />
               <span className="text-xs text-slate-500 group-hover:text-indigo-400">検索・その他</span>
            </button>
@@ -368,7 +336,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
         </h3>
         <div className="space-y-2">
            {[1, 2].map(i => (
-              <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-[#0a0a12] border border-slate-800 hover:bg-[#151520] cursor-pointer transition-colors" onClick={() => { setSelectedBank(MAJOR_BANKS[0]); handleNext(); }}>
+              <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-[#0f0f18] border border-slate-800 hover:bg-slate-800 cursor-pointer transition-colors" onClick={() => { setSelectedBank(MAJOR_BANKS[0]); handleNext(); }}>
                  <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] text-slate-400">
                        履歴
@@ -388,42 +356,23 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
 
   // --- STEP: Account Input (Adaptive) ---
   if (step === 'account_input') {
-      const getTitle = () => {
-          if (method === 'bank') return '口座情報の入力';
-          if (method === 'paypay') return 'PayPay ID/電話番号';
-          if (method === 'cotra') return 'ことら送金先の指定';
-          if (method === 'wise') return 'Wise Recipient';
-          if (method === 'revolut') return 'Revolut ID';
-          return 'Destination';
-      }
-
       return (
-        <div className="anim-enter-right max-w-3xl mx-auto pb-28 relative">
-          {renderHeader(getTitle())}
+        <div className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
+          {renderHeader(method === 'bank' ? '口座情報の入力' : method === 'paypay' ? 'PayPay ID/電話番号' : 'ことら送金先の指定')}
           
-          <div className="bg-[#0a0a12] border border-slate-800 rounded-[2rem] p-6 space-y-6 shadow-2xl">
+          <div className="bg-[#0f0f18] border border-slate-800 rounded-2xl p-6 space-y-6">
              
              {/* Method Indicator */}
-             <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-900/50 border border-slate-800">
+             <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-900 border border-slate-800">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-lg ${
                     method === 'bank' ? selectedBank?.color : 
-                    method === 'paypay' ? 'bg-red-500' : 
-                    method === 'wise' ? 'bg-lime-500' :
-                    method === 'revolut' ? 'bg-black border border-white/20' :
-                    'bg-green-500'
+                    method === 'paypay' ? 'bg-red-500' : 'bg-green-500'
                 }`}>
-                    {method === 'bank' ? selectedBank?.short.substring(0,2) : 
-                     method === 'paypay' ? 'P' : 
-                     method === 'wise' ? <Globe size={20} /> :
-                     method === 'revolut' ? 'R' : 'C'}
+                    {method === 'bank' ? selectedBank?.short.substring(0,2) : method === 'paypay' ? 'P' : 'C'}
                 </div>
                 <div>
                    <div className="font-bold text-white">
-                       {method === 'bank' ? selectedBank?.name : 
-                        method === 'paypay' ? 'PayPay残高送金' : 
-                        method === 'wise' ? 'Wise Transfer' :
-                        method === 'revolut' ? 'Revolut P2P' :
-                        'ことら送金 (10万円以下)'}
+                       {method === 'bank' ? selectedBank?.name : method === 'paypay' ? 'PayPay残高送金' : 'ことら送金 (10万円以下)'}
                    </div>
                    <div className="text-xs text-slate-500">への送金</div>
                 </div>
@@ -437,13 +386,13 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                            <label className="text-xs font-bold text-slate-400 mb-2 block">支店名・支店番号</label>
                            <button onClick={autoFillBank} className="text-[10px] text-indigo-500 font-bold hover:underline">AUTO-FILL (TEST)</button>
                        </div>
-                       <div className="relative group">
+                       <div className="relative">
                           <input 
                              type="text" 
                              value={branchName}
                              onChange={(e) => setBranchName(e.target.value)}
                              placeholder="例：本店営業部 (001)"
-                             className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-indigo-500 transition-colors focus:shadow-[0_0_10px_rgba(79,70,229,0.2)] group-hover:border-slate-600"
+                             className="w-full bg-black/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors focus:shadow-[0_0_10px_rgba(79,70,229,0.2)]"
                           />
                           <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500" />
                        </div>
@@ -456,7 +405,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                              <button 
                                key={type}
                                onClick={() => setAccountType(type)}
-                               className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-all ${accountType === type ? 'bg-indigo-900/30 border-indigo-500 text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.2)]' : 'bg-slate-900 border-slate-700 text-slate-400'}`}
+                               className={`flex-1 py-2 rounded-lg text-sm font-bold border transition-all ${accountType === type ? 'bg-indigo-900/30 border-indigo-500 text-indigo-400' : 'bg-slate-900 border-slate-700 text-slate-400'}`}
                              >
                                 {type}
                              </button>
@@ -471,24 +420,19 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                           value={accountNumber}
                           onChange={(e) => setAccountNumber(e.target.value.replace(/[^0-9]/g, '').slice(0, 7))}
                           placeholder="1234567"
-                          className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-4 text-white font-mono text-xl tracking-widest focus:outline-none focus:border-indigo-500 transition-colors focus:shadow-[0_0_10px_rgba(79,70,229,0.2)]"
+                          className="w-full bg-black/50 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono text-lg tracking-widest focus:outline-none focus:border-indigo-500 transition-colors focus:shadow-[0_0_10px_rgba(79,70,229,0.2)]"
                        />
                     </div>
                  </div>
              )}
 
-             {/* OTHER INPUTS */}
-             {method !== 'bank' && (
+             {/* PAYPAY / COTRA INPUTS */}
+             {(method === 'paypay' || method === 'cotra') && (
                  <div className="space-y-6">
                      <div className="flex gap-2">
-                        {/* Phone is common */}
                         <button onClick={() => setRecipientType('phone')} className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${recipientType === 'phone' ? 'bg-slate-800 border-white/20 text-white' : 'border-transparent text-slate-500'}`}>電話番号</button>
-                        
-                        {/* Specific types */}
                         {method === 'paypay' && <button onClick={() => setRecipientType('id')} className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${recipientType === 'id' ? 'bg-slate-800 border-white/20 text-white' : 'border-transparent text-slate-500'}`}>PayPay ID</button>}
                         {method === 'cotra' && <button onClick={() => setRecipientType('email')} className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${recipientType === 'email' ? 'bg-slate-800 border-white/20 text-white' : 'border-transparent text-slate-500'}`}>メールアドレス</button>}
-                        {method === 'wise' && <button onClick={() => setRecipientType('email')} className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${recipientType === 'email' ? 'bg-slate-800 border-white/20 text-white' : 'border-transparent text-slate-500'}`}>Email</button>}
-                        {method === 'revolut' && <button onClick={() => setRecipientType('revtag')} className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${recipientType === 'revtag' ? 'bg-slate-800 border-white/20 text-white' : 'border-transparent text-slate-500'}`}>Revtag</button>}
                      </div>
 
                      <div className="relative">
@@ -496,19 +440,11 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                            type={recipientType === 'phone' ? 'tel' : 'text'}
                            value={recipientId}
                            onChange={(e) => setRecipientId(e.target.value)}
-                           placeholder={
-                               recipientType === 'phone' ? '090-1234-5678' : 
-                               recipientType === 'id' ? 'paypay_id' : 
-                               recipientType === 'revtag' ? '@username' :
-                               'sample@email.com'
-                           }
-                           className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-4 text-white text-lg focus:outline-none focus:border-indigo-500 transition-colors pl-12 focus:shadow-[0_0_10px_rgba(79,70,229,0.2)]"
+                           placeholder={recipientType === 'phone' ? '090-1234-5678' : recipientType === 'id' ? 'paypay_id_sample' : 'sample@email.com'}
+                           className="w-full bg-black/50 border border-slate-700 rounded-xl px-4 py-4 text-white text-lg focus:outline-none focus:border-indigo-500 transition-colors pl-12 focus:shadow-[0_0_10px_rgba(79,70,229,0.2)]"
                         />
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
-                            {recipientType === 'phone' ? <Smartphone size={20} /> : 
-                             recipientType === 'id' ? <QrCode size={20} /> : 
-                             recipientType === 'revtag' ? <AtSign size={20} /> :
-                             <Mail size={20} />}
+                            {recipientType === 'phone' ? <Smartphone size={20} /> : recipientType === 'id' ? <QrCode size={20} /> : <Mail size={20} />}
                         </div>
                      </div>
                      <p className="text-xs text-slate-500 text-center">
@@ -521,11 +457,11 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                onClick={handleNext}
                disabled={
                    (method === 'bank' && (!branchName || accountNumber.length < 7)) ||
-                   ((method !== 'bank') && recipientId.length < 3)
+                   ((method === 'paypay' || method === 'cotra') && recipientId.length < 3)
                }
-               className="w-full py-4 mt-4 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-indigo-500/20 group"
+               className="w-full py-4 mt-4 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-indigo-500/20"
              >
-                次へ進む <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                次へ進む <ArrowRight size={18} />
              </button>
           </div>
         </div>
@@ -535,35 +471,35 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   // --- STEP: Amount Input ---
   if (step === 'amount_input') {
       return (
-        <div className="anim-enter-right max-w-3xl mx-auto pb-28 relative">
+        <div className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
           {renderHeader('金額の入力')}
 
-          <div className="bg-[#0a0a12] border border-slate-800 rounded-[2rem] p-6 space-y-6 shadow-2xl">
-             <div className="text-center py-8">
-                 <label className="text-xs font-bold text-slate-500 mb-4 block uppercase tracking-widest">送金金額</label>
+          <div className="bg-[#0f0f18] border border-slate-800 rounded-2xl p-6 space-y-6">
+             <div className="text-center py-6">
+                 <label className="text-xs font-bold text-slate-500 mb-2 block">送金金額</label>
                  <div className="flex items-end justify-center gap-2">
-                    <span className="text-4xl text-slate-500 mb-2">¥</span>
+                    <span className="text-4xl text-slate-400 mb-2">¥</span>
                     <input 
                        type="tel"
                        value={amount}
                        onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
                        placeholder="0"
-                       className="bg-transparent text-6xl sm:text-7xl font-mono font-bold text-white w-full text-center focus:outline-none placeholder-slate-800 transition-all text-glow"
+                       className="bg-transparent text-6xl font-mono font-bold text-white w-full text-center focus:outline-none placeholder-slate-700"
                        autoFocus
                     />
                  </div>
-                 {amount && <div className="text-slate-500 mt-4 font-mono text-sm bg-slate-900/50 px-3 py-1 rounded-full inline-block border border-slate-800">手数料: ¥0 (Godmode Waiver)</div>}
+                 {amount && <div className="text-slate-500 mt-2 font-mono">手数料: ¥0 (Godmode Waiver)</div>}
                  {method === 'cotra' && parseInt(amount) > 100000 && (
-                     <div className="text-red-400 text-xs mt-2 font-bold flex items-center justify-center gap-1 animate-pulse">
+                     <div className="text-red-400 text-xs mt-2 font-bold flex items-center justify-center gap-1">
                          <AlertCircle size={12} /> ことら送金の上限は10万円です
                      </div>
                  )}
              </div>
 
-             <div className="bg-slate-900/50 rounded-2xl p-5 border border-slate-800 hover:bg-slate-900/70 transition-colors">
+             <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800">
                 <div className="flex justify-between items-center mb-2">
                    <label className="text-xs font-bold text-slate-400">振込依頼人名</label>
-                   <button onClick={() => setIsEditingSender(!isEditingSender)} className="text-indigo-400 text-xs flex items-center gap-1 font-bold hover:text-white transition-colors">
+                   <button onClick={() => setIsEditingSender(!isEditingSender)} className="text-indigo-400 text-xs flex items-center gap-1">
                       <Pencil size={12} /> 編集
                    </button>
                 </div>
@@ -572,19 +508,19 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                       type="text"
                       value={senderName}
                       onChange={(e) => setSenderName(e.target.value)}
-                      className="w-full bg-black/50 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:border-indigo-500 outline-none"
+                      className="w-full bg-black/50 border border-slate-700 rounded px-2 py-1 text-white text-sm"
                     />
                 ) : (
-                    <div className="text-white font-bold text-lg">{senderName}</div>
+                    <div className="text-white font-bold">{senderName}</div>
                 )}
              </div>
 
              <button 
                onClick={handleNext}
                disabled={!amount || (method === 'cotra' && parseInt(amount) > 100000)}
-               className="w-full py-4 mt-4 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-indigo-500/20 group"
+               className="w-full py-4 mt-4 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-indigo-500/20"
              >
-                確認画面へ <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                確認画面へ <ArrowRight size={18} />
              </button>
           </div>
         </div>
@@ -594,98 +530,83 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   // --- STEP: Confirm (Redesigned) ---
   if (step === 'confirm') {
       return (
-        <div className="anim-enter-right max-w-3xl mx-auto pb-28 relative">
+        <div className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
           {renderHeader('内容確認')}
 
           <div className="space-y-6">
-                <div className="bg-[#0a0a12] border border-slate-800 rounded-[2rem] p-0 shadow-2xl relative overflow-hidden group hover:border-cyan-500/30 transition-colors">
-                    <div className="absolute top-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 shadow-[0_0_15px_rgba(6,182,212,0.5)]"></div>
+                <div className="bg-[#0f0f18] border border-slate-800 rounded-2xl p-0 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600"></div>
                     
-                    <div className="p-8 border-b border-slate-800 text-center relative">
-                       <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/10 to-transparent pointer-events-none"></div>
-                       <span className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-3 relative z-10">Total Amount</span>
-                       <div className="text-5xl font-mono font-bold text-white tracking-tight drop-shadow-lg relative z-10">
+                    <div className="p-6 border-b border-slate-800 text-center">
+                       <span className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">Total Amount</span>
+                       <div className="text-4xl font-mono font-bold text-white tracking-tight drop-shadow-md">
                           ¥ {parseInt(amount).toLocaleString()}
                        </div>
-                       <span className="inline-block mt-4 px-3 py-1 bg-slate-900 rounded-full text-[10px] text-slate-400 border border-slate-800 font-mono relative z-10">
+                       <span className="inline-block mt-2 px-2 py-0.5 bg-slate-900 rounded text-[10px] text-slate-400 border border-slate-800">
                           Transfer Fee: ¥0 (Godmode Waiver)
                        </span>
                     </div>
 
-                    <div className="p-8 space-y-8 relative z-10">
+                    <div className="p-6 space-y-6">
                        {/* Recipient */}
-                       <div className="flex gap-5">
-                          <div className="flex flex-col items-center gap-2 min-w-[60px]">
-                             <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/5 ${
-                                 method === 'bank' ? selectedBank?.color : 
-                                 method === 'paypay' ? 'bg-red-500' : 
-                                 method === 'wise' ? 'bg-lime-500' :
-                                 method === 'revolut' ? 'bg-black border border-white/20' :
-                                 'bg-green-500'
+                       <div className="flex gap-4">
+                          <div className="flex flex-col items-center gap-1 min-w-[60px]">
+                             <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-lg ${
+                                 method === 'bank' ? selectedBank?.color : method === 'paypay' ? 'bg-red-500' : 'bg-green-500'
                              }`}>
-                                 {method === 'bank' ? selectedBank?.short.substring(0,1) : 
-                                  method === 'paypay' ? 'P' : 
-                                  method === 'wise' ? <Globe size={24} /> :
-                                  method === 'revolut' ? 'R' :
-                                  'C'}
+                                 {method === 'bank' ? selectedBank?.short.substring(0,1) : method === 'paypay' ? 'P' : 'C'}
                              </div>
-                             <span className="text-[10px] font-bold text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">TO</span>
+                             <span className="text-[10px] font-bold text-slate-500">TO</span>
                           </div>
-                          <div className="flex-1 border-l-2 border-slate-800 pl-5">
-                             <div className="text-xs font-bold text-slate-500 uppercase mb-1 tracking-wider">Recipient (送金先)</div>
-                             <div className="font-bold text-white text-xl leading-tight">
-                                {method === 'bank' ? selectedBank?.name : 
-                                 method === 'paypay' ? 'PayPay ID' : 
-                                 method === 'wise' ? 'Wise Account' :
-                                 method === 'revolut' ? 'Revolut User' :
-                                 'Contact'}
+                          <div className="flex-1 border-l-2 border-slate-800 pl-4">
+                             <div className="text-xs font-bold text-slate-500 uppercase mb-1">Recipient (送金先)</div>
+                             <div className="font-bold text-white text-lg leading-tight">
+                                {method === 'bank' ? selectedBank?.name : method === 'paypay' ? 'PayPay ID' : 'Contact'}
                              </div>
-                             <div className="text-sm text-indigo-400 font-mono mt-1 font-medium">
+                             <div className="text-sm text-indigo-400 font-mono mt-1">
                                 {method === 'bank' ? `${branchName} / ${accountType} / ${accountNumber}` : recipientId}
                              </div>
                           </div>
                        </div>
 
                        {/* Sender */}
-                       <div className="flex gap-5">
-                          <div className="flex flex-col items-center gap-2 min-w-[60px]">
-                             <div className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shadow-lg">
-                                <User size={24} className="text-slate-400" />
+                       <div className="flex gap-4">
+                          <div className="flex flex-col items-center gap-1 min-w-[60px]">
+                             <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                                <User size={20} className="text-slate-400" />
                              </div>
-                             <span className="text-[10px] font-bold text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">FROM</span>
+                             <span className="text-[10px] font-bold text-slate-500">FROM</span>
                           </div>
-                          <div className="flex-1 border-l-2 border-slate-800 pl-5">
-                             <div className="text-xs font-bold text-slate-500 uppercase mb-1 tracking-wider">Sender (送金元)</div>
-                             <div className="font-bold text-white text-lg">{senderName}</div>
+                          <div className="flex-1 border-l-2 border-slate-800 pl-4">
+                             <div className="text-xs font-bold text-slate-500 uppercase mb-1">Sender (送金元)</div>
+                             <div className="font-bold text-white">{senderName}</div>
                              <div className="text-xs text-slate-500 mt-1">{selectedSource.bankName} {selectedSource.branchName}</div>
                           </div>
                        </div>
                     </div>
 
                     {/* Verification Seal */}
-                    <div className="absolute bottom-6 right-6 opacity-10 pointer-events-none">
-                       <ShieldCheck size={150} className="text-indigo-500 rotate-[-15deg]" />
+                    <div className="absolute bottom-6 right-6 opacity-20 pointer-events-none">
+                       <ShieldCheck size={120} className="text-indigo-500 rotate-[-15deg]" />
                     </div>
                 </div>
 
-                <div className="bg-amber-950/20 border border-amber-500/20 p-5 rounded-2xl flex gap-4 items-start shadow-inner">
-                   <div className="p-2 bg-amber-900/30 rounded-full text-amber-500">
-                      <AlertCircle size={20} />
-                   </div>
-                   <p className="text-xs text-amber-200/80 leading-relaxed pt-1">
-                      This transaction will be processed immediately via the <span className="text-amber-400 font-bold">ΩMAX Priority Network</span>. Please confirm details before signing.
+                <div className="bg-yellow-950/20 border border-yellow-500/20 p-4 rounded-xl flex gap-3 items-start">
+                   <AlertCircle size={20} className="text-yellow-500 shrink-0" />
+                   <p className="text-xs text-yellow-200/70 leading-relaxed">
+                      This transaction will be processed immediately via the ΩMAX Priority Network. Please confirm details before signing.
                    </p>
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                    <button onClick={handleBack} className="flex-1 py-4 border border-slate-800 rounded-2xl text-slate-400 font-bold hover:bg-slate-900 hover:text-white transition-colors">
+                    <button onClick={handleBack} className="flex-1 py-4 border border-slate-800 rounded-xl text-slate-400 font-bold hover:bg-slate-900 transition-colors">
                         修正 (Edit)
                     </button>
                     <button 
                         onClick={handleTransfer}
-                        className="flex-[2] py-4 bg-gradient-to-r from-cyan-600 to-indigo-600 text-white font-bold rounded-2xl shadow-[0_0_25px_rgba(79,70,229,0.3)] hover:shadow-[0_0_40px_rgba(79,70,229,0.5)] transition-all flex items-center justify-center gap-3 group active:scale-[0.98]"
+                        className="flex-[2] py-4 bg-gradient-to-r from-cyan-600 to-indigo-600 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition-all flex items-center justify-center gap-2 group active:scale-[0.98]"
                     >
-                        <Fingerprint size={24} className="group-hover:scale-110 transition-transform" /> 承認して送金
+                        <Fingerprint size={20} className="group-hover:scale-110 transition-transform" /> 承認して送金
                     </button>
                 </div>
              </div>
@@ -697,53 +618,51 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   if (step === 'complete') {
      return (
         <div className="flex flex-col items-center justify-center py-8 animate-in zoom-in-95 duration-500">
-            <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center ring-2 ring-green-500/50 shadow-[0_0_50px_rgba(34,197,94,0.4)] mb-8 relative">
+            <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center ring-2 ring-green-500/50 shadow-[0_0_30px_rgba(34,197,94,0.4)] mb-6 relative">
                 <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping"></div>
-                <CheckCircle2 size={48} className="text-green-500 relative z-10" />
+                <CheckCircle2 size={40} className="text-green-500 relative z-10" />
             </div>
-            <h2 className="text-3xl font-black text-white mb-2 tracking-tight">送金手続き完了</h2>
-            <p className="text-slate-400 mb-10 text-sm">デジタル証明書が発行されました。</p>
+            <h2 className="text-2xl font-bold text-white mb-2">送金手続き完了</h2>
+            <p className="text-slate-400 mb-8 text-sm">デジタル証明書が発行されました。</p>
 
-            <div className="bg-[#eef2f6] text-slate-900 rounded-sm p-8 w-full max-w-md shadow-2xl relative overflow-hidden mb-10 font-serif border-[6px] border-double border-slate-300 anim-enter-bottom rotate-1 hover:rotate-0 transition-transform duration-500">
-                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/linen.png')]"></div>
+            <div className="bg-white text-slate-900 rounded-sm p-8 w-full max-w-md shadow-2xl relative overflow-hidden mb-8 font-serif border-4 border-double border-slate-300 anim-enter-bottom">
+                <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/linen.png')]"></div>
                 
-                <div className="text-center border-b-2 border-slate-800 pb-6 mb-6">
-                    <h3 className="text-2xl font-bold uppercase tracking-[0.2em] text-slate-900">Transaction<br/>Certificate</h3>
-                    <div className="text-[10px] text-slate-500 mt-2 font-sans tracking-widest uppercase">TK Global Bank • Official Record</div>
+                <div className="text-center border-b-2 border-slate-800 pb-4 mb-6">
+                    <h3 className="text-xl font-bold uppercase tracking-widest">Transaction Certificate</h3>
+                    <div className="text-[10px] text-slate-500 mt-1">TK Global Bank • Official Record</div>
                 </div>
 
-                <div className="space-y-5 text-sm relative z-10">
-                    <div className="flex justify-between border-b border-slate-300 pb-2">
-                        <span className="font-bold text-slate-500 uppercase text-xs tracking-wider">Transaction ID</span>
-                        <span className="font-mono font-bold text-slate-900">{txId}</span>
+                <div className="space-y-4 text-sm relative z-10">
+                    <div className="flex justify-between">
+                        <span className="font-bold text-slate-600">Transaction ID</span>
+                        <span className="font-mono font-bold">{txId}</span>
                     </div>
-                    <div className="flex justify-between border-b border-slate-300 pb-2">
-                        <span className="font-bold text-slate-500 uppercase text-xs tracking-wider">Date</span>
-                        <span className="font-mono text-slate-900">{new Date().toLocaleString()}</span>
+                    <div className="flex justify-between">
+                        <span className="font-bold text-slate-600">Date</span>
+                        <span className="font-mono">{new Date().toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between pt-2">
-                        <span className="font-bold text-slate-500 uppercase text-xs tracking-wider">Amount</span>
-                        <span className="font-mono font-bold text-2xl text-slate-900">¥ {parseInt(amount).toLocaleString()}</span>
+                    <div className="flex justify-between border-t border-slate-300 pt-2">
+                        <span className="font-bold text-slate-600">Amount</span>
+                        <span className="font-mono font-bold text-lg">¥ {parseInt(amount).toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-slate-100 p-3 rounded border border-slate-200 mt-2">
-                        <span className="font-bold text-slate-500 uppercase text-xs tracking-wider">Recipient</span>
-                        <span className="text-right font-bold text-slate-900 max-w-[150px] truncate">{method === 'bank' ? selectedBank?.short : 'Contact'}</span>
+                    <div className="flex justify-between">
+                        <span className="font-bold text-slate-600">Recipient</span>
+                        <span className="text-right max-w-[150px] truncate">{method === 'bank' ? selectedBank?.short : 'Contact'}</span>
                     </div>
                 </div>
 
-                <div className="mt-10 pt-4 border-t-2 border-slate-800 flex justify-between items-end">
-                    <div className="text-[9px] text-slate-500 uppercase tracking-widest leading-relaxed">
-                        Authorized by<br/>TK Global Core System<br/>ΩβαMAX V9.0
+                <div className="mt-8 pt-4 border-t-2 border-slate-800 flex justify-between items-end">
+                    <div className="text-[10px] text-slate-500">
+                        Authorized by<br/>TK Global Core System
                     </div>
-                    <div className="w-24 h-24 border-[3px] border-red-800 rounded-full flex items-center justify-center opacity-40 rotate-[-15deg] absolute bottom-6 right-6 pointer-events-none mix-blend-multiply">
-                        <div className="w-20 h-20 border border-red-800 rounded-full flex items-center justify-center">
-                            <span className="text-red-800 font-black text-xs uppercase tracking-widest border-y border-red-800 px-1 transform rotate-[-5deg]">Verified</span>
-                        </div>
+                    <div className="w-20 h-20 border-4 border-red-800 rounded-full flex items-center justify-center opacity-30 rotate-[-15deg] absolute bottom-4 right-4 pointer-events-none">
+                        <span className="text-red-800 font-bold text-[10px] uppercase border-y border-red-800 px-1">Verified</span>
                     </div>
                 </div>
             </div>
 
-            <button onClick={resetForm} className="bg-slate-800 hover:bg-slate-700 text-white px-10 py-4 rounded-2xl font-bold transition-all w-full max-w-md shadow-lg border border-slate-700 hover:border-slate-600">
+            <button onClick={resetForm} className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-xl font-bold transition-colors w-full max-w-md">
                 閉じる (Close)
             </button>
         </div>
