@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Landmark, Globe, CreditCard, Plus, ArrowRight, ShieldCheck, Banknote, Building2, CheckCircle2, AlertCircle, RefreshCw, Zap, Cpu, Scan, ArrowDownToLine, Settings, Copy } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Landmark, Globe, CreditCard, Plus, ArrowRight, ShieldCheck, Banknote, Building2, CheckCircle2, AlertCircle, RefreshCw, Zap, Cpu, Scan, ArrowDownToLine, Settings, Copy, Activity, Server, Radio } from 'lucide-react';
 
 type ServiceTab = 'accounts' | 'transfer_intl' | 'loans';
 
@@ -21,6 +21,9 @@ const GLOBAL_BANK_DB: BankInfo[] = [
   { code: 'SG', name: 'Singapore', flag: '🇸🇬', currency: 'SGD', swift: 'TKGB SG SG', format: 'Bank: 7XXX / Branch: 0XX / Acc: XXXXXXX', desc: 'FAST / PayNow' },
   { code: 'HK', name: 'Hong Kong', flag: '🇭🇰', currency: 'HKD', swift: 'TKGB HK HH', format: 'Bank: 0XX / Branch: XXX / Acc: XXXXXXX', desc: 'HKMA Clearing / FPS' },
   { code: 'JP', name: 'Japan', flag: '🇯🇵', currency: 'JPY', swift: 'TKGB JP JT', format: 'Bank: 00XX / Branch: XXX / Acc: XXXXXXX', desc: 'Zengin System' },
+  { code: 'CH', name: 'Switzerland', flag: '🇨🇭', currency: 'CHF', swift: 'TKGB CH ZZ', format: 'CHXX 0000 0000 0000 0000 0', desc: 'SIC / SEPA' },
+  { code: 'AE', name: 'UAE (Dubai)', flag: '🇦🇪', currency: 'AED', swift: 'TKGB AE AA', format: 'AEXX 0000 0000 0000 0000 000', desc: 'UAEFTS / ICCS' },
+  { code: 'KY', name: 'Cayman Islands', flag: '🇰🇾', currency: 'KYD', swift: 'TKGB KY KK', format: 'KYXX 0000 0000 0000 0000 000', desc: 'SWIFT / ACH' },
 ];
 
 export const BankServicesView: React.FC = () => {
@@ -33,10 +36,43 @@ export const BankServicesView: React.FC = () => {
   const [selectedCountry, setSelectedCountry] = useState<BankInfo>(GLOBAL_BANK_DB[0]);
   const [generatedAccount, setGeneratedAccount] = useState<any | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Fetching State
+  const [isFetchingInfo, setIsFetchingInfo] = useState(false);
+  const [bankNetworkStatus, setBankNetworkStatus] = useState<any>({
+     clearing: 'SEPA Instant',
+     latency: '12ms',
+     status: 'OPERATIONAL',
+     settlement: 'Immediate'
+  });
 
   const simulateAiAction = (action: string) => {
     setAiAction(action);
     setTimeout(() => setAiAction(''), 3000);
+  };
+
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const code = e.target.value;
+    const country = GLOBAL_BANK_DB.find(c => c.code === code);
+    if (country) {
+        setIsFetchingInfo(true);
+        setGeneratedAccount(null);
+        
+        // Simulate async network fetch for bank details
+        setTimeout(() => {
+            setSelectedCountry(country);
+            
+            // Generate random network stats
+            setBankNetworkStatus({
+                clearing: country.desc.split(' / ')[0] + ' Network',
+                latency: Math.floor(Math.random() * 40) + 5 + 'ms',
+                status: 'OPERATIONAL',
+                settlement: new Date(Date.now() + 3600000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' (Next Batch)'
+            });
+            
+            setIsFetchingInfo(false);
+        }, 600);
+    }
   };
 
   const generateAccountDetails = () => {
@@ -49,6 +85,9 @@ export const BankServicesView: React.FC = () => {
         else if (selectedCountry.code === 'US') accountNumber = `Routing: 021${randomNum(6)} / Acc: ${randomNum(9)}`;
         else if (selectedCountry.code === 'GB') accountNumber = `Sort: ${randomNum(2)}-${randomNum(2)}-${randomNum(2)} / Acc: ${randomNum(8)}`;
         else if (selectedCountry.code === 'SG') accountNumber = `DBS-${randomNum(3)}-${randomNum(6)}-${randomNum(1)}`;
+        else if (selectedCountry.code === 'CH') accountNumber = `CH${randomNum(2)} 0000 ${randomNum(4)} ${randomNum(4)} ${randomNum(4)} ${randomNum(1)}`;
+        else if (selectedCountry.code === 'AE') accountNumber = `AE${randomNum(2)} 0000 ${randomNum(4)} ${randomNum(4)} ${randomNum(4)} ${randomNum(3)}`;
+        else if (selectedCountry.code === 'KY') accountNumber = `KY${randomNum(2)} ${randomNum(4)} ${randomNum(4)} ${randomNum(4)} ${randomNum(4)}`;
         else accountNumber = `${selectedCountry.code}-${randomNum(4)}-${randomNum(6)}`;
 
         setGeneratedAccount({
@@ -80,7 +119,7 @@ export const BankServicesView: React.FC = () => {
         </div>
       </div>
 
-      {/* AI Command Nexus (New Feature) */}
+      {/* AI Command Nexus */}
       <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500"></div>
           <div className="flex justify-between items-center mb-4">
@@ -120,7 +159,7 @@ export const BankServicesView: React.FC = () => {
               </button>
 
               <button 
-                onClick={() => window.location.hash = '#/atm'} // Fallback navigation simulation
+                onClick={() => window.location.hash = '#/atm'} 
                 className="p-3 bg-indigo-900/20 border border-indigo-500/30 rounded-xl hover:bg-indigo-900/40 transition-colors flex flex-col items-center gap-2 group/btn"
               >
                   <Scan size={20} className="text-indigo-400 group-hover/btn:scale-110 transition-transform" />
@@ -140,15 +179,10 @@ export const BankServicesView: React.FC = () => {
                       <div className="space-y-2">
                           <label className="text-xs font-bold text-slate-400">Jurisdiction</label>
                           <select 
-                             className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                             onChange={(e) => {
-                                 const country = GLOBAL_BANK_DB.find(c => c.code === e.target.value);
-                                 if (country) {
-                                     setSelectedCountry(country);
-                                     setGeneratedAccount(null);
-                                 }
-                             }}
+                             className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer"
+                             onChange={handleCountryChange}
                              value={selectedCountry.code}
+                             disabled={isFetchingInfo || isGenerating}
                           >
                               {GLOBAL_BANK_DB.map(bank => (
                                   <option key={bank.code} value={bank.code}>
@@ -157,30 +191,48 @@ export const BankServicesView: React.FC = () => {
                               ))}
                           </select>
                       </div>
-                      <div className="bg-black/20 rounded-xl p-4 border border-slate-700/50">
-                          <label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Banking Standards</label>
-                          <div className="space-y-2 text-sm">
-                              <div className="flex justify-between">
-                                  <span className="text-slate-500">SWIFT/BIC:</span>
-                                  <span className="font-mono text-cyan-400">{selectedCountry.swift}</span>
+
+                      {/* Network Status Panel */}
+                      <div className="bg-black/20 rounded-xl p-4 border border-slate-700/50 relative">
+                          {isFetchingInfo ? (
+                              <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+                                  <div className="flex flex-col items-center gap-2">
+                                      <RefreshCw size={24} className="text-cyan-500 animate-spin" />
+                                      <span className="text-xs text-cyan-400 font-mono">Fetching Bank Data...</span>
+                                  </div>
                               </div>
-                              <div className="flex justify-between">
-                                  <span className="text-slate-500">Currency:</span>
-                                  <span className="font-mono text-white">{selectedCountry.currency}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                  <span className="text-slate-500">Format:</span>
-                                  <span className="font-mono text-slate-300 text-xs">{selectedCountry.format}</span>
-                              </div>
-                          </div>
+                          ) : (
+                              <>
+                                  <div className="flex justify-between items-start mb-3">
+                                      <label className="text-xs font-bold text-slate-400 uppercase block">Banking Standards</label>
+                                      <span className="flex items-center gap-1 text-[10px] text-green-400 font-mono bg-green-900/20 px-1.5 py-0.5 rounded border border-green-500/20">
+                                          <Activity size={10} /> {bankNetworkStatus.latency}
+                                      </span>
+                                  </div>
+                                  <div className="space-y-2 text-sm">
+                                      <div className="flex justify-between">
+                                          <span className="text-slate-500">SWIFT/BIC:</span>
+                                          <span className="font-mono text-cyan-400 font-bold">{selectedCountry.swift}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                          <span className="text-slate-500">Format:</span>
+                                          <span className="font-mono text-white text-xs truncate max-w-[180px]">{selectedCountry.format}</span>
+                                      </div>
+                                      <div className="pt-2 border-t border-slate-800/50 flex justify-between items-center mt-1">
+                                          <span className="text-[10px] text-slate-500 flex items-center gap-1"><Server size={10} /> {bankNetworkStatus.clearing}</span>
+                                          <span className="text-[10px] text-green-400 font-bold">{bankNetworkStatus.status}</span>
+                                      </div>
+                                  </div>
+                              </>
+                          )}
                       </div>
                   </div>
 
                   {!generatedAccount ? (
                       <button 
                         onClick={generateAccountDetails}
-                        disabled={isGenerating}
-                        className="w-full py-4 bg-gradient-to-r from-cyan-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 hover:scale-[1.01] transition-transform disabled:opacity-50"
+                        disabled={isGenerating || isFetchingInfo}
+                        className="w-full py-4 bg-gradient-to-r from-cyan-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 hover:scale-[1.01] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                           {isGenerating ? <RefreshCw size={18} className="animate-spin" /> : <Zap size={18} fill="currentColor" />}
                           {isGenerating ? 'Connecting to Global Ledger...' : 'Generate New Account Credentials'}
@@ -205,7 +257,7 @@ export const BankServicesView: React.FC = () => {
                               </button>
                           </div>
                           
-                          <div className="bg-black/40 rounded-lg p-4 font-mono text-sm space-y-2 border border-emerald-500/20 relative group cursor-pointer" onClick={() => navigator.clipboard.writeText(generatedAccount.accountNumber)}>
+                          <div className="bg-black/40 rounded-lg p-4 font-mono text-sm space-y-2 border border-emerald-500/20 relative group cursor-pointer hover:bg-black/60 transition-colors" onClick={() => navigator.clipboard.writeText(generatedAccount.accountNumber)}>
                               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <Copy size={14} className="text-slate-400" />
                               </div>
@@ -250,19 +302,19 @@ export const BankServicesView: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                  <input type="text" placeholder="SWIFT / BIC Code" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono" />
-                  <input type="text" placeholder="IBAN / Account Number" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono" />
-                  <input type="text" placeholder="Beneficiary Name" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white" />
+                  <input type="text" placeholder="SWIFT / BIC Code" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
+                  <input type="text" placeholder="IBAN / Account Number" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
+                  <input type="text" placeholder="Beneficiary Name" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
                   
                   <div className="pt-4 border-t border-slate-800">
                       <div className="flex justify-between items-end mb-2">
                           <label className="text-xs font-bold text-slate-400">Amount</label>
                           <span className="text-xs text-indigo-400 font-mono">Fee: Waived (Godmode)</span>
                       </div>
-                      <input type="text" placeholder="0.00" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-4 text-2xl font-bold text-white text-right" />
+                      <input type="text" placeholder="0.00" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-4 text-2xl font-bold text-white text-right placeholder-slate-700 focus:border-indigo-500 focus:outline-none" />
                   </div>
 
-                  <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 mt-4">
+                  <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 mt-4 shadow-lg shadow-indigo-500/20">
                       Initiate Wire Transfer <ArrowRight size={18} />
                   </button>
               </div>

@@ -58,8 +58,9 @@ export const STARTUP_LOGS = [
   "ORCHESTRATOR: NODES SYNCED [EU1, US1, SG1, UAE1]",
   "∞ INFINITY BOOST: ENGAGED",
   "🔥 GLOBAL ORCHESTRATOR PERMANENTLY ONLINE — ALL MODULES ACTIVE ♾️",
-  "💎 GODMODE REAL DEPLOY SUCCESSFUL ✅",
-  "🌐 350 accounts + DEX + Wallet + NFT fully synced"
+  "💎♾️ GODMODE INFINITE DEPLOY COMPLETE ✅",
+  "🌐 BANK / KOTRA / PayPay / ATM / CRYPTO / NFT fully synced",
+  "💠 HUD Access: /ai_hud | Card UI: Full Operational | Realtime Send/Receive Enabled"
 ];
 
 export const BUSINESS_PORTFOLIO: BusinessEntity[] = [

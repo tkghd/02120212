@@ -13,7 +13,15 @@ module.exports = {
       script: "./integrated/server.js",
       instances: 1,
       exec_mode: "fork",
-      env: { PORT: 3100 }
+      env: { 
+        PORT: 3100,
+        BANK_API_KEY: "BANK_API_KEY",
+        KOTRA_API_KEY: "KOTRA_API_KEY",
+        PAYPAY_API_KEY: "PAYPAY_API_KEY",
+        ATM_SYNC: "ENABLED",
+        CRYPTO_SYNC: "ENABLED",
+        HUD_ACCESS: "ENABLED"
+      }
     },
     {
       name: "god_hud",
@@ -34,7 +42,11 @@ module.exports = {
       script: "./wallet/server.js",
       instances: 1,
       exec_mode: "fork",
-      env: { PORT: 3140 }
+      env: { 
+          PORT: 3140,
+          WALLET_SYNC: "ENABLED",
+          CARD_UI: "FULL"
+      }
     },
     {
       name: "god_nft_sync",
