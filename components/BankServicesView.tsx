@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Landmark, Globe, CreditCard, Plus, ArrowRight, ShieldCheck, Banknote, Building2, CheckCircle2, AlertCircle, RefreshCw, Zap, Cpu, Scan, ArrowDownToLine, Settings, Copy, Activity, Server, Radio } from 'lucide-react';
+import { Landmark, Globe, CreditCard, Plus, ArrowRight, ShieldCheck, Banknote, Building2, CheckCircle2, AlertCircle, RefreshCw, Zap, Cpu, Scan, ArrowDownToLine, Settings, Copy, Activity, Server, Radio, Network } from 'lucide-react';
 
 type ServiceTab = 'accounts' | 'transfer_intl' | 'loans';
 
@@ -24,6 +24,8 @@ const GLOBAL_BANK_DB: BankInfo[] = [
   { code: 'CH', name: 'Switzerland', flag: '🇨🇭', currency: 'CHF', swift: 'TKGB CH ZZ', format: 'CHXX 0000 0000 0000 0000 0', desc: 'SIC / SEPA' },
   { code: 'AE', name: 'UAE (Dubai)', flag: '🇦🇪', currency: 'AED', swift: 'TKGB AE AA', format: 'AEXX 0000 0000 0000 0000 000', desc: 'UAEFTS / ICCS' },
   { code: 'KY', name: 'Cayman Islands', flag: '🇰🇾', currency: 'KYD', swift: 'TKGB KY KK', format: 'KYXX 0000 0000 0000 0000 000', desc: 'SWIFT / ACH' },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺', currency: 'AUD', swift: 'TKGB AU 2S', format: 'BSB: XXX-XXX / Acc: XXXXXXXXX', desc: 'BECS / NPP' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦', currency: 'CAD', swift: 'TKGB CA 2T', format: 'Transit: XXXXX / Inst: XXX / Acc: XXXXXXX', desc: 'ACSS / LVTS' },
 ];
 
 export const BankServicesView: React.FC = () => {
@@ -57,6 +59,7 @@ export const BankServicesView: React.FC = () => {
     if (country) {
         setIsFetchingInfo(true);
         setGeneratedAccount(null);
+        setBankNetworkStatus(prev => ({ ...prev, status: 'SYNCING...' }));
         
         // Simulate async network fetch for bank details
         setTimeout(() => {
@@ -71,7 +74,7 @@ export const BankServicesView: React.FC = () => {
             });
             
             setIsFetchingInfo(false);
-        }, 600);
+        }, 800);
     }
   };
 
@@ -88,6 +91,8 @@ export const BankServicesView: React.FC = () => {
         else if (selectedCountry.code === 'CH') accountNumber = `CH${randomNum(2)} 0000 ${randomNum(4)} ${randomNum(4)} ${randomNum(4)} ${randomNum(1)}`;
         else if (selectedCountry.code === 'AE') accountNumber = `AE${randomNum(2)} 0000 ${randomNum(4)} ${randomNum(4)} ${randomNum(4)} ${randomNum(3)}`;
         else if (selectedCountry.code === 'KY') accountNumber = `KY${randomNum(2)} ${randomNum(4)} ${randomNum(4)} ${randomNum(4)} ${randomNum(4)}`;
+        else if (selectedCountry.code === 'AU') accountNumber = `BSB: 062-${randomNum(3)} / Acc: 1${randomNum(8)}`;
+        else if (selectedCountry.code === 'CA') accountNumber = `Transit: ${randomNum(5)} / Inst: 003 / Acc: ${randomNum(7)}`;
         else accountNumber = `${selectedCountry.code}-${randomNum(4)}-${randomNum(6)}`;
 
         setGeneratedAccount({
@@ -193,34 +198,36 @@ export const BankServicesView: React.FC = () => {
                       </div>
 
                       {/* Network Status Panel */}
-                      <div className="bg-black/20 rounded-xl p-4 border border-slate-700/50 relative">
+                      <div className="bg-black/20 rounded-xl p-4 border border-slate-700/50 relative overflow-hidden">
                           {isFetchingInfo ? (
-                              <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
-                                  <div className="flex flex-col items-center gap-2">
+                              <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm z-20 flex items-center justify-center rounded-xl">
+                                  <div className="flex flex-col items-center gap-3">
                                       <RefreshCw size={24} className="text-cyan-500 animate-spin" />
-                                      <span className="text-xs text-cyan-400 font-mono">Fetching Bank Data...</span>
+                                      <span className="text-xs text-cyan-400 font-mono tracking-widest">CONNECTING TO {selectedCountry.name.toUpperCase()}...</span>
                                   </div>
                               </div>
                           ) : (
                               <>
-                                  <div className="flex justify-between items-start mb-3">
-                                      <label className="text-xs font-bold text-slate-400 uppercase block">Banking Standards</label>
+                                  <div className="flex justify-between items-start mb-3 relative z-10">
+                                      <label className="text-xs font-bold text-slate-400 uppercase block flex items-center gap-2">
+                                         <Network size={12} /> Banking Standards
+                                      </label>
                                       <span className="flex items-center gap-1 text-[10px] text-green-400 font-mono bg-green-900/20 px-1.5 py-0.5 rounded border border-green-500/20">
                                           <Activity size={10} /> {bankNetworkStatus.latency}
                                       </span>
                                   </div>
-                                  <div className="space-y-2 text-sm">
-                                      <div className="flex justify-between">
-                                          <span className="text-slate-500">SWIFT/BIC:</span>
+                                  <div className="space-y-3 text-sm relative z-10">
+                                      <div className="flex justify-between p-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                                          <span className="text-slate-400 text-xs">SWIFT / BIC Code</span>
                                           <span className="font-mono text-cyan-400 font-bold">{selectedCountry.swift}</span>
                                       </div>
-                                      <div className="flex justify-between">
-                                          <span className="text-slate-500">Format:</span>
-                                          <span className="font-mono text-white text-xs truncate max-w-[180px]">{selectedCountry.format}</span>
+                                      <div className="flex justify-between p-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                                          <span className="text-slate-400 text-xs">IBAN / Format</span>
+                                          <span className="font-mono text-white text-xs truncate max-w-[160px]">{selectedCountry.format}</span>
                                       </div>
                                       <div className="pt-2 border-t border-slate-800/50 flex justify-between items-center mt-1">
                                           <span className="text-[10px] text-slate-500 flex items-center gap-1"><Server size={10} /> {bankNetworkStatus.clearing}</span>
-                                          <span className="text-[10px] text-green-400 font-bold">{bankNetworkStatus.status}</span>
+                                          <span className="text-[10px] text-green-400 font-bold tracking-wide">{bankNetworkStatus.status}</span>
                                       </div>
                                   </div>
                               </>

@@ -18,6 +18,7 @@ module.exports = {
         BANK_API_KEY: "BANK_API_KEY",
         KOTRA_API_KEY: "KOTRA_API_KEY",
         PAYPAY_API_KEY: "PAYPAY_API_KEY",
+        DEX_API_KEY: "DEX_API_KEY",
         ATM_SYNC: "ENABLED",
         CRYPTO_SYNC: "ENABLED",
         HUD_ACCESS: "ENABLED"
@@ -54,6 +55,13 @@ module.exports = {
       instances: 1,
       exec_mode: "fork",
       env: { PORT: 3150, NFT_SYNC: "ENABLED" }
+    },
+    {
+      name: "god_dex",
+      script: "./dex/server.js",
+      instances: 1,
+      exec_mode: "fork",
+      env: { PORT: 3160, DEX_API_KEY: "DEX_API_KEY" }
     }
   ]
 };
