@@ -15,6 +15,7 @@ import { ProdBadge } from './components/ProdBadge';
 import { RevenueCounter } from './components/RevenueCounter';
 import { ModuleLinker } from './components/ModuleLinker';
 import { AppMenu } from './components/AppMenu';
+import { NotificationSystem } from './components/NotificationSystem';
 import { SystemModule, WalletState, QueueState, ActiveTab, OwnerAccount } from './types';
 import { INITIAL_MODULES, STARTUP_LOGS, INITIAL_WALLET, INITIAL_QUEUES, OWNER_ACCOUNTS } from './constants';
 
@@ -60,6 +61,9 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen flex-col bg-[#05050a] text-slate-100 font-sans overflow-hidden shadow-[inset_0_0_100px_rgba(6,182,212,0.1)]">
       
+      {/* Real-time Notification Overlay */}
+      <NotificationSystem />
+
       {/* Redesigned Minimal Header */}
       <header className="flex-none flex items-center justify-between bg-[#080812]/80 backdrop-blur-md px-5 py-4 z-30 border-b border-white/5 relative">
         <div className="flex items-center gap-3">

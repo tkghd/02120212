@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Landmark, Globe, CreditCard, Plus, ArrowRight, ShieldCheck, Banknote, Building2, CheckCircle2, AlertCircle, RefreshCw, Zap, Cpu, Scan, ArrowDownToLine, Settings, Copy, Activity, Server, Radio, Network } from 'lucide-react';
+import { Landmark, Globe, CreditCard, Plus, ArrowRight, ShieldCheck, Banknote, Building2, CheckCircle2, AlertCircle, RefreshCw, Zap, Cpu, Scan, ArrowDownToLine, Settings, Copy, Activity, Server, Radio, Network, Database, Save, Trash2, Hash } from 'lucide-react';
 
-type ServiceTab = 'accounts' | 'transfer_intl' | 'loans';
+type ServiceTab = 'accounts' | 'transfer_intl' | 'loans' | 'admin_registry';
 
 interface BankInfo {
   code: string;
@@ -14,22 +14,89 @@ interface BankInfo {
   desc: string;
 }
 
-const GLOBAL_BANK_DB: BankInfo[] = [
-  { code: 'EU', name: 'European Union', flag: '🇪🇺', currency: 'EUR', swift: 'TKGB LT 2X', format: 'LTXX 3500 00XX XXXX XXXX', desc: 'SEPA / IBAN Standard' },
-  { code: 'US', name: 'United States', flag: '🇺🇸', currency: 'USD', swift: 'TKGB US 33', format: 'Routing: XXXXXXXX / Acc: XXXXXXXXX', desc: 'ACH / FedWire / SWIFT' },
-  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', currency: 'GBP', swift: 'TKGB GB 2L', format: 'Sort: XX-XX-XX / Acc: XXXXXXXX', desc: 'FPS / CHAPS / BACS' },
-  { code: 'SG', name: 'Singapore', flag: '🇸🇬', currency: 'SGD', swift: 'TKGB SG SG', format: 'Bank: 7XXX / Branch: 0XX / Acc: XXXXXXX', desc: 'FAST / PayNow' },
-  { code: 'HK', name: 'Hong Kong', flag: '🇭🇰', currency: 'HKD', swift: 'TKGB HK HH', format: 'Bank: 0XX / Branch: XXX / Acc: XXXXXXX', desc: 'HKMA Clearing / FPS' },
-  { code: 'JP', name: 'Japan', flag: '🇯🇵', currency: 'JPY', swift: 'TKGB JP JT', format: 'Bank: 00XX / Branch: XXX / Acc: XXXXXXX', desc: 'Zengin System' },
-  { code: 'CH', name: 'Switzerland', flag: '🇨🇭', currency: 'CHF', swift: 'TKGB CH ZZ', format: 'CHXX 0000 0000 0000 0000 0', desc: 'SIC / SEPA' },
-  { code: 'AE', name: 'UAE (Dubai)', flag: '🇦🇪', currency: 'AED', swift: 'TKGB AE AA', format: 'AEXX 0000 0000 0000 0000 000', desc: 'UAEFTS / ICCS' },
-  { code: 'KY', name: 'Cayman Islands', flag: '🇰🇾', currency: 'KYD', swift: 'TKGB KY KK', format: 'KYXX 0000 0000 0000 0000 000', desc: 'SWIFT / ACH' },
-  { code: 'AU', name: 'Australia', flag: '🇦🇺', currency: 'AUD', swift: 'TKGB AU 2S', format: 'BSB: XXX-XXX / Acc: XXXXXXXXX', desc: 'BECS / NPP' },
-  { code: 'CA', name: 'Canada', flag: '🇨🇦', currency: 'CAD', swift: 'TKGB CA 2T', format: 'Transit: XXXXX / Inst: XXX / Acc: XXXXXXX', desc: 'ACSS / LVTS' },
-  { code: 'BR', name: 'Brazil', flag: '🇧🇷', currency: 'BRL', swift: 'TKGB BR BB', format: 'Ag: XXXX / Acc: XXXXX-X', desc: 'Pix / STR' },
-  { code: 'IN', name: 'India', flag: '🇮🇳', currency: 'INR', swift: 'TKGB IN BB', format: 'IFSC: TKGB000XXXX / Acc: XXXXXXXXXX', desc: 'UPI / IMPS / NEFT' },
-  { code: 'CN', name: 'China', flag: '🇨🇳', currency: 'CNY', swift: 'TKGB CN CC', format: 'CNAPS: XXXXXX / Acc: XXXXXXXXXXXXXXXX', desc: 'CIPS / CNAPS' },
+// Enhanced Bank List with Major Global Economies
+const INITIAL_BANK_DB: BankInfo[] = [
+  // Major Global
+  { code: 'US', name: 'United States', flag: '🇺🇸', currency: 'USD', swift: 'TKGB US 33', format: 'Routing / Account', desc: 'ACH / FedWire / SWIFT' },
+  { code: 'EU', name: 'European Union', flag: '🇪🇺', currency: 'EUR', swift: 'TKGB LT 2X', format: 'IBAN (LT)', desc: 'SEPA / TARGET2' },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', currency: 'GBP', swift: 'TKGB GB 2L', format: 'Sort Code / Account', desc: 'FPS / CHAPS / BACS' },
+  { code: 'JP', name: 'Japan', flag: '🇯🇵', currency: 'JPY', swift: 'TKGB JP JT', format: 'Bank-Branch-Account', desc: 'Zengin System' },
+  
+  // Europe Extended
+  { code: 'DE', name: 'Germany', flag: '🇩🇪', currency: 'EUR', swift: 'TKGB DE FF', format: 'IBAN (DE)', desc: 'Bundesbank / SEPA' },
+  { code: 'FR', name: 'France', flag: '🇫🇷', currency: 'EUR', swift: 'TKGB FR PP', format: 'IBAN (FR)', desc: 'BdF / SEPA' },
+  { code: 'CH', name: 'Switzerland', flag: '🇨🇭', currency: 'CHF', swift: 'TKGB CH ZZ', format: 'IBAN (CH)', desc: 'SIC / SEPA' },
+  
+  // Asia Extended
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬', currency: 'SGD', swift: 'TKGB SG SG', format: 'Bank-Branch-Account', desc: 'FAST / PayNow' },
+  { code: 'HK', name: 'Hong Kong', flag: '🇭🇰', currency: 'HKD', swift: 'TKGB HK HH', format: 'Bank-Branch-Account', desc: 'HKMA / FPS' },
+  { code: 'KR', name: 'South Korea', flag: '🇰🇷', currency: 'KRW', swift: 'TKGB KR SE', format: 'XXX-XX-XXXXXX', desc: 'KFTC / BOK-Wire' },
+  { code: 'CN', name: 'China', flag: '🇨🇳', currency: 'CNY', swift: 'TKGB CN CC', format: 'CNAPS / Account', desc: 'CIPS / CNAPS' },
+  { code: 'IN', name: 'India', flag: '🇮🇳', currency: 'INR', swift: 'TKGB IN BB', format: 'IFSC / Account', desc: 'UPI / IMPS / NEFT' },
+  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', currency: 'VND', swift: 'TKGB VN HH', format: 'XXXX XXXX XXXX', desc: 'CITAD / VCB' },
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭', currency: 'THB', swift: 'TKGB TH BK', format: 'XXX-X-XXXXX-X', desc: 'PromptPay / BAHTNET' },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', currency: 'IDR', swift: 'TKGB ID JA', format: 'Account Number', desc: 'BI-FAST / SKNBI' },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', currency: 'MYR', swift: 'TKGB MY KL', format: 'Account Number', desc: 'DuitNow / RENTAS' },
+  { code: 'PH', name: 'Philippines', flag: '🇵🇭', currency: 'PHP', swift: 'TKGB PH MM', format: 'Account Number', desc: 'InstaPay / PESONet' },
+  
+  // Others
+  { code: 'AE', name: 'UAE (Dubai)', flag: '🇦🇪', currency: 'AED', swift: 'TKGB AE AA', format: 'IBAN (AE)', desc: 'UAEFTS / ICCS' },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺', currency: 'AUD', swift: 'TKGB AU 2S', format: 'BSB / Account', desc: 'BECS / NPP' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦', currency: 'CAD', swift: 'TKGB CA 2T', format: 'Transit-Inst-Account', desc: 'ACSS / LVTS' },
+  { code: 'BR', name: 'Brazil', flag: '🇧🇷', currency: 'BRL', swift: 'TKGB BR BB', format: 'Ag / Account', desc: 'Pix / STR' },
+  { code: 'KY', name: 'Cayman Islands', flag: '🇰🇾', currency: 'KYD', swift: 'TKGB KY KK', format: 'Account Number', desc: 'Offshore / SWIFT' },
 ];
+
+// Helper for Mock Generation (Simulating a library)
+const MockBankGenerator = {
+    randNum: (len: number) => Array.from({length: len}, () => Math.floor(Math.random() * 10)).join(''),
+    
+    // Generate IBAN for supported countries
+    generateIBAN: (country: string) => {
+        const r = MockBankGenerator.randNum;
+        switch(country) {
+            case 'DE': return `DE${r(2)} ${r(8)} ${r(10)}`;
+            case 'FR': return `FR${r(2)} ${r(5)} ${r(5)} ${r(11)} ${r(2)}`;
+            case 'CH': return `CH${r(2)} ${r(5)} ${r(12)}`;
+            case 'GB': return `GB${r(2)} TKGB ${r(6)} ${r(8)}`;
+            case 'AE': return `AE${r(2)} 033 ${r(16)}`;
+            case 'EU': return `LT${r(2)} 3500 00${r(10)}`; // Defaulting EU to LT for now
+            case 'IT': return `IT${r(2)} X ${r(5)} ${r(5)} ${r(12)}`;
+            case 'ES': return `ES${r(2)} ${r(4)} ${r(4)} ${r(2)} ${r(10)}`;
+            default: return `${country}${r(2)} ${r(4)} ${r(4)} ${r(4)} ${r(4)}`;
+        }
+    },
+    
+    // Generate Local format for non-IBAN countries
+    generateLocal: (country: string) => {
+        const r = MockBankGenerator.randNum;
+        switch(country) {
+            case 'US': return `Routing: 0${r(8)} / Acc: ${r(10)}`;
+            case 'JP': return `Bank: 00${r(2)} / Branch: ${r(3)} / Acc: ${r(7)}`;
+            case 'SG': return `Bank: 7${r(3)} / Branch: 0${r(2)} / Acc: ${r(9)}`;
+            case 'HK': return `Bank: 0${r(2)} / Branch: ${r(3)} / Acc: ${r(9)}`;
+            case 'KR': return `${r(3)}-${r(2)}-${r(6)}-${r(1)}`;
+            case 'CN': return `CNAPS: ${r(12)} / Acc: ${r(19)}`;
+            case 'IN': return `IFSC: TKGB0${r(6)} / Acc: ${r(12)}`;
+            case 'AU': return `BSB: 0${r(2)}-${r(3)} / Acc: ${r(9)}`;
+            case 'CA': return `Transit: ${r(5)} / Inst: 003 / Acc: ${r(7)}`;
+            case 'VN': return `9704 ${r(4)} ${r(4)} ${r(4)}`;
+            case 'TH': return `${r(3)}-${r(1)}-${r(5)}-${r(1)}`;
+            case 'ID': return `${r(4)}-${r(2)}-${r(6)}-${r(2)}`;
+            case 'MY': return `${r(4)} ${r(2)} ${r(6)}`;
+            case 'PH': return `${r(4)} ${r(4)} ${r(2)}`;
+            default: return `ACC: ${r(12)}`;
+        }
+    },
+
+    // Generate SWIFT/BIC
+    generateSWIFT: (country: string) => {
+        const codes = ['TKGB', 'GODM', 'VLTX', 'OMNI'];
+        const bank = codes[Math.floor(Math.random() * codes.length)];
+        const loc = country + Array.from({length: 2}, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
+        return `${bank} ${country} ${loc} XXX`;
+    }
+};
 
 export const BankServicesView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ServiceTab>('accounts');
@@ -37,8 +104,11 @@ export const BankServicesView: React.FC = () => {
   const [loanApproved, setLoanApproved] = useState(false);
   const [aiAction, setAiAction] = useState<string>('');
   
+  // Bank List Management
+  const [bankList, setBankList] = useState<BankInfo[]>(INITIAL_BANK_DB);
+
   // Global Bank Generation State
-  const [selectedCountry, setSelectedCountry] = useState<BankInfo>(GLOBAL_BANK_DB[0]);
+  const [selectedCountry, setSelectedCountry] = useState<BankInfo>(INITIAL_BANK_DB[0]);
   const [generatedAccount, setGeneratedAccount] = useState<any | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   
@@ -51,6 +121,11 @@ export const BankServicesView: React.FC = () => {
      settlement: 'Immediate'
   });
 
+  // Registry Form State
+  const [newBank, setNewBank] = useState<BankInfo>({
+      code: '', name: '', flag: '🏳️', currency: '', swift: 'TKGB', format: '', desc: ''
+  });
+
   const simulateAiAction = (action: string) => {
     setAiAction(action);
     setTimeout(() => setAiAction(''), 3000);
@@ -58,7 +133,7 @@ export const BankServicesView: React.FC = () => {
 
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const code = e.target.value;
-    const country = GLOBAL_BANK_DB.find(c => c.code === code);
+    const country = bankList.find(c => c.code === code);
     if (country) {
         setIsFetchingInfo(true);
         setGeneratedAccount(null);
@@ -81,31 +156,41 @@ export const BankServicesView: React.FC = () => {
     }
   };
 
+  const handleRegisterBank = () => {
+      if (!newBank.code || !newBank.name || !newBank.swift) return;
+      
+      const bankToAdd = {
+          ...newBank,
+          code: newBank.code.toUpperCase(),
+          swift: newBank.swift.toUpperCase()
+      };
+      
+      setBankList([...bankList, bankToAdd]);
+      setNewBank({ code: '', name: '', flag: '🏳️', currency: '', swift: 'TKGB', format: '', desc: '' });
+      simulateAiAction(`New Entity Registered: ${bankToAdd.name}`);
+  };
+
+  const handleDeleteBank = (code: string) => {
+      setBankList(prev => prev.filter(b => b.code !== code));
+  };
+
   const generateAccountDetails = () => {
     setIsGenerating(true);
     setTimeout(() => {
-        const randomNum = (len: number) => Array.from({length: len}, () => Math.floor(Math.random() * 10)).join('');
+        // Use Mock Generator
+        const isIBAN = ['EU','DE','FR','CH','GB','AE','IT','ES'].includes(selectedCountry.code);
         
-        let accountNumber = '';
-        if (selectedCountry.code === 'EU') accountNumber = `LT${randomNum(2)} 3500 00${randomNum(2)} ${randomNum(4)} ${randomNum(4)}`;
-        else if (selectedCountry.code === 'US') accountNumber = `Routing: 021${randomNum(6)} / Acc: ${randomNum(9)}`;
-        else if (selectedCountry.code === 'GB') accountNumber = `Sort: ${randomNum(2)}-${randomNum(2)}-${randomNum(2)} / Acc: ${randomNum(8)}`;
-        else if (selectedCountry.code === 'SG') accountNumber = `DBS-${randomNum(3)}-${randomNum(6)}-${randomNum(1)}`;
-        else if (selectedCountry.code === 'CH') accountNumber = `CH${randomNum(2)} 0000 ${randomNum(4)} ${randomNum(4)} ${randomNum(4)} ${randomNum(1)}`;
-        else if (selectedCountry.code === 'AE') accountNumber = `AE${randomNum(2)} 0000 ${randomNum(4)} ${randomNum(4)} ${randomNum(4)} ${randomNum(3)}`;
-        else if (selectedCountry.code === 'KY') accountNumber = `KY${randomNum(2)} ${randomNum(4)} ${randomNum(4)} ${randomNum(4)} ${randomNum(4)}`;
-        else if (selectedCountry.code === 'AU') accountNumber = `BSB: 062-${randomNum(3)} / Acc: 1${randomNum(8)}`;
-        else if (selectedCountry.code === 'CA') accountNumber = `Transit: ${randomNum(5)} / Inst: 003 / Acc: ${randomNum(7)}`;
-        else if (selectedCountry.code === 'BR') accountNumber = `Ag: ${randomNum(4)} / Acc: ${randomNum(5)}-${randomNum(1)}`;
-        else if (selectedCountry.code === 'IN') accountNumber = `IFSC: TKGB0${randomNum(6)} / Acc: ${randomNum(11)}`;
-        else if (selectedCountry.code === 'CN') accountNumber = `CNAPS: ${randomNum(6)} / Acc: ${randomNum(16)}`;
-        else accountNumber = `${selectedCountry.code}-${randomNum(4)}-${randomNum(6)}`;
+        const accountNumber = isIBAN 
+            ? MockBankGenerator.generateIBAN(selectedCountry.code)
+            : MockBankGenerator.generateLocal(selectedCountry.code);
+
+        const swiftCode = MockBankGenerator.generateSWIFT(selectedCountry.code);
 
         setGeneratedAccount({
             country: selectedCountry.name,
             flag: selectedCountry.flag,
             currency: selectedCountry.currency,
-            swift: selectedCountry.swift,
+            swift: swiftCode,
             accountNumber: accountNumber,
             type: 'Corporate Checking (Godmode)',
             timestamp: new Date().toLocaleString()
@@ -123,10 +208,11 @@ export const BankServicesView: React.FC = () => {
            </h2>
            <p className="text-xs text-slate-400 font-mono mt-1">Global Banking Services & Credit Protocol</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1 max-w-[50%] md:max-w-none">
             <TabButton active={activeTab === 'accounts'} onClick={() => setActiveTab('accounts')} label="Accounts" icon={<Plus size={14} />} />
             <TabButton active={activeTab === 'transfer_intl'} onClick={() => setActiveTab('transfer_intl')} label="Intl. Wire" icon={<Globe size={14} />} />
             <TabButton active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} label="Lending" icon={<Banknote size={14} />} />
+            <TabButton active={activeTab === 'admin_registry'} onClick={() => setActiveTab('admin_registry')} label="Registry" icon={<Database size={14} />} />
         </div>
       </div>
 
@@ -195,7 +281,7 @@ export const BankServicesView: React.FC = () => {
                              value={selectedCountry.code}
                              disabled={isFetchingInfo || isGenerating}
                           >
-                              {GLOBAL_BANK_DB.map(bank => (
+                              {bankList.map(bank => (
                                   <option key={bank.code} value={bank.code}>
                                       {bank.flag} {bank.name} ({bank.code})
                                   </option>
@@ -281,7 +367,7 @@ export const BankServicesView: React.FC = () => {
                           <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
                               <div>
                                   <span className="text-slate-500 block">Bank Identifier</span>
-                                  <span className="text-white font-mono">{selectedCountry.swift}</span>
+                                  <span className="text-white font-mono">{generatedAccount.swift}</span>
                               </div>
                               <div className="text-right">
                                   <span className="text-slate-500 block">Initial Limit</span>
@@ -298,6 +384,7 @@ export const BankServicesView: React.FC = () => {
                   <AccountCard region="EU" iban="LT45 7300 0099 1234 5678" currency="EUR" balance="€ 4,500,000" bank="TK Global Bank (Lithuania)" />
                   <AccountCard region="US" iban="Routing: 021000021 / Acc: 987654321" currency="USD" balance="$ 12,250,000" bank="TK Global Bank (NY Branch)" />
                   <AccountCard region="SG" iban="DBS-Link-888-999-000" currency="SGD" balance="S$ 8,888,888" bank="DBS / TK Trust" />
+                  <AccountCard region="KR" iban="082-20-999999" currency="KRW" balance="₩ 5,000,000,000" bank="TK Global Bank (Seoul)" />
               </div>
           </div>
       )}
@@ -315,8 +402,14 @@ export const BankServicesView: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                  <input type="text" placeholder="SWIFT / BIC Code" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
-                  <input type="text" placeholder="IBAN / Account Number" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
+                  <div className="relative">
+                      <Hash size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                      <input type="text" placeholder="SWIFT / BIC Code" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 pl-12 py-3 text-white font-mono placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
+                  </div>
+                  <div className="relative">
+                      <CreditCard size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                      <input type="text" placeholder="IBAN / Account Number" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 pl-12 py-3 text-white font-mono placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
+                  </div>
                   <input type="text" placeholder="Beneficiary Name" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
                   
                   <div className="pt-4 border-t border-slate-800">
@@ -409,6 +502,114 @@ export const BankServicesView: React.FC = () => {
                           <div className="text-xs text-green-400">Active</div>
                       </div>
                   </div>
+              </div>
+          </div>
+      )}
+
+      {activeTab === 'admin_registry' && (
+          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 anim-enter-right">
+             <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-400 border border-amber-500/20">
+                      <Database size={24} />
+                  </div>
+                  <div>
+                      <h3 className="text-lg font-bold text-white">Bank Registry</h3>
+                      <p className="text-xs text-slate-400">Add & Manage Global Banking Entities</p>
+                  </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="space-y-4">
+                      <div className="space-y-2">
+                          <label className="text-xs font-bold text-slate-400">Bank Name</label>
+                          <input 
+                             type="text" 
+                             className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none"
+                             value={newBank.name}
+                             onChange={e => setNewBank({...newBank, name: e.target.value})}
+                             placeholder="e.g. Bank of Mars"
+                          />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                              <label className="text-xs font-bold text-slate-400">Country Code</label>
+                              <input 
+                                type="text" 
+                                className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none font-mono uppercase"
+                                value={newBank.code}
+                                onChange={e => setNewBank({...newBank, code: e.target.value})}
+                                placeholder="e.g. MA"
+                                maxLength={2}
+                              />
+                          </div>
+                          <div className="space-y-2">
+                              <label className="text-xs font-bold text-slate-400">Currency</label>
+                              <input 
+                                type="text" 
+                                className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none font-mono uppercase"
+                                value={newBank.currency}
+                                onChange={e => setNewBank({...newBank, currency: e.target.value})}
+                                placeholder="e.g. MRD"
+                                maxLength={3}
+                              />
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                      <div className="space-y-2">
+                          <label className="text-xs font-bold text-slate-400">SWIFT Prefix</label>
+                          <input 
+                             type="text" 
+                             className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none font-mono uppercase"
+                             value={newBank.swift}
+                             onChange={e => setNewBank({...newBank, swift: e.target.value})}
+                             placeholder="e.g. TKGB MA"
+                          />
+                      </div>
+                      <div className="space-y-2">
+                          <label className="text-xs font-bold text-slate-400">Network / Description</label>
+                          <input 
+                             type="text" 
+                             className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none"
+                             value={newBank.desc}
+                             onChange={e => setNewBank({...newBank, desc: e.target.value})}
+                             placeholder="e.g. Interplanetary Transfer Protocol"
+                          />
+                      </div>
+                  </div>
+              </div>
+
+              <div className="flex justify-end mb-8 pb-8 border-b border-slate-800">
+                  <button 
+                    onClick={handleRegisterBank}
+                    className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all active:scale-95"
+                  >
+                      <Save size={18} /> Register Entity
+                  </button>
+              </div>
+
+              <h4 className="text-xs font-bold text-slate-500 uppercase mb-4">Registered Banking Entities</h4>
+              <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                  {bankList.map((bank) => (
+                      <div key={bank.code} className="flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-600 transition-colors">
+                          <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-lg shadow-sm">
+                                  {bank.flag}
+                              </div>
+                              <div>
+                                  <div className="text-sm font-bold text-white">{bank.name}</div>
+                                  <div className="text-[10px] text-slate-500 font-mono">{bank.code} • {bank.currency} • {bank.swift}</div>
+                              </div>
+                          </div>
+                          <button 
+                            onClick={() => handleDeleteBank(bank.code)}
+                            className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
+                          >
+                              <Trash2 size={16} />
+                          </button>
+                      </div>
+                  ))}
               </div>
           </div>
       )}
