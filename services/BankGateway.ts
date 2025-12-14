@@ -90,6 +90,15 @@ class BankGatewayService {
     return mockBal.toLocaleString();
   }
 
+  /**
+   * Log Authentication Events
+   */
+  public logAuth(success: boolean, userId: string, details?: string) {
+    const status = success ? "SUCCESS" : "DENIED";
+    const msg = `AUTH_EVENT: User ${userId} [${status}]${details ? ` - ${details}` : ''}`;
+    this.logInternal(msg);
+  }
+
   public getLogs() {
     return this.transactionLog;
   }

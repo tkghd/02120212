@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { Fingerprint, Scan, ShieldCheck, ArrowRight, Activity, Command } from 'lucide-react';
+import { Fingerprint, Scan, ShieldCheck, ArrowRight, Activity, Command, Lock, AlertOctagon } from 'lucide-react';
+import { BankGateway } from '../services/BankGateway';
 
 interface LoginProps {
   onLogin: () => void;
@@ -10,6 +11,7 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
   const [account, setAccount] = useState('1190212');
   const [isScanning, setIsScanning] = useState(false);
   const [status, setStatus] = useState('Secure Connection Est.');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Simulate system startup sequence
@@ -31,8 +33,19 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (account) {
-      handleBiometricAuth();
+    setError(null);
+    
+    // STRICT ID GUARD
+    if (account === '1190212') {
+        BankGateway.logAuth(true, account, "Biometric Challenge Started");
+        handleBiometricAuth();
+    } else {
+        const msg = "ACCESS DENIED: ID MISMATCH";
+        setError(msg);
+        BankGateway.logAuth(false, account, "Invalid ID Provided");
+        
+        // Shake effect or similar could be added here
+        setStatus("SECURITY ALERT: UNAUTHORIZED");
     }
   };
 
@@ -40,6 +53,7 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
       setIsScanning(true);
       setStatus("Verifying Biometrics...");
       setTimeout(() => {
+          BankGateway.logAuth(true, account, "Session Token Granted");
           onLogin();
       }, 1500);
   };
@@ -66,8 +80,8 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-indigo-200 tracking-tight mb-2">
                 Godmode Bank
             </h1>
-            <p className="text-sm text-slate-400 font-mono tracking-widest uppercase">
-                Ultimate Financial Core
+            <p className="text-sm text-slate-400 font-mono tracking-widest uppercase flex items-center justify-center gap-2">
+                <Lock size={12} className="text-amber-500" /> ID GUARD: ACTIVE
             </p>
         </div>
 
@@ -76,8 +90,8 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
             {/* Status Bar */}
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                 <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-[10px] text-green-400 font-mono font-bold uppercase tracking-wider">{status}</span>
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${error ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                    <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${error ? 'text-red-400' : 'text-green-400'}`}>{status}</span>
                 </div>
                 <Activity size={14} className="text-slate-500" />
             </div>
@@ -91,22 +105,32 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
                             <Fingerprint size={48} className="text-cyan-400 animate-pulse" />
                         </div>
                     </div>
-                    <p className="text-sm text-cyan-300 font-mono animate-pulse">AUTHENTICATING...</p>
+                    <p className="text-sm text-cyan-300 font-mono animate-pulse">AUTHENTICATING ID: {account}...</p>
                 </div>
             ) : (
                 <form onSubmit={handleLogin} className="space-y-5">
+                    {error && (
+                        <div className="bg-red-900/20 border border-red-500/50 p-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                            <AlertOctagon size={20} className="text-red-500" />
+                            <div className="text-xs text-red-200 font-bold">{error}</div>
+                        </div>
+                    )}
+
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-400 ml-1 uppercase">Account ID</label>
+                        <div className="flex justify-between">
+                            <label className="text-xs font-bold text-slate-400 ml-1 uppercase">Account ID</label>
+                            <span className="text-[10px] text-amber-500 bg-amber-900/20 px-2 py-0.5 rounded border border-amber-500/30">1190212 REQUIRED</span>
+                        </div>
                         <div className="relative group">
                             <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-xl opacity-0 group-hover:opacity-30 transition duration-500"></div>
                             <input 
-                                className="relative w-full bg-slate-950/80 border border-slate-700 rounded-xl px-4 py-4 text-white placeholder-slate-600 outline-none focus:border-cyan-500/50 transition-all font-mono tracking-widest text-lg" 
-                                placeholder="1190212" 
+                                className={`relative w-full bg-slate-950/80 border rounded-xl px-4 py-4 text-white placeholder-slate-600 outline-none transition-all font-mono tracking-widest text-lg ${error ? 'border-red-500/50 focus:border-red-500' : 'border-slate-700 focus:border-cyan-500/50'}`}
+                                placeholder="ENTER ID" 
                                 value={account}
                                 onChange={(e) => setAccount(e.target.value)}
                                 autoFocus
                             />
-                            <ShieldCheck size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600" />
+                            <ShieldCheck size={20} className={`absolute right-4 top-1/2 -translate-y-1/2 ${error ? 'text-red-500' : 'text-slate-600'}`} />
                         </div>
                     </div>
 
@@ -119,10 +143,10 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
                     </button>
 
                     <div className="pt-4 flex items-center justify-center gap-4">
-                        <button type="button" onClick={handleBiometricAuth} className="p-3 rounded-full bg-slate-800/50 hover:bg-slate-700 border border-slate-700 text-cyan-400 transition-all hover:scale-110">
+                        <button type="button" className="p-3 rounded-full bg-slate-800/50 hover:bg-slate-700 border border-slate-700 text-cyan-400 transition-all hover:scale-110 opacity-50 cursor-not-allowed" title="Keycard Disabled">
                             <Scan size={24} />
                         </button>
-                        <span className="text-[10px] text-slate-500">BIOMETRIC</span>
+                        <span className="text-[10px] text-slate-500">MANUAL ENTRY ONLY</span>
                     </div>
                 </form>
             )}

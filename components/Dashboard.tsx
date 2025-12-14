@@ -20,6 +20,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ modules, booted, wallet, q
   const { theme } = useTheme();
 
   const prodModules = [
+      { name: 'AUTH', status: 'LOCKED', impact: 'ID: 1190212', icon: <Lock size={10} />, color: 'text-amber-400', bg: 'bg-amber-900/20', border: 'border-amber-500/30' },
       { name: 'REALapi', status: 'LIVE', impact: 'Transactions', icon: <Zap size={10} />, color: 'text-red-400', bg: 'bg-red-900/20', border: 'border-red-500/30' },
       { name: 'BANK Gateway', status: 'CONNECTED', impact: 'External Link', icon: <Globe size={10} />, color: 'text-blue-400', bg: 'bg-blue-900/20', border: 'border-blue-500/30' },
       { name: 'LICENSE', status: 'VERIFIED', impact: 'Legal', icon: <ShieldCheck size={10} />, color: 'text-green-400', bg: 'bg-green-900/20', border: 'border-green-500/30' },

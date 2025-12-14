@@ -31,6 +31,11 @@ const MAJOR_BANKS = [
   { id: 'shinsei', name: 'SBI新生銀行', short: 'SBI新生', color: 'bg-[#006090]' },
   { id: 'yokohama', name: '横浜銀行', short: '横浜', color: 'bg-[#003f8e]' },
   { id: 'chiba', name: '千葉銀行', short: '千葉', color: 'bg-[#d9000d]' },
+  { id: 'fukuoka', name: '福岡銀行', short: '福岡', color: 'bg-[#00904a]' },
+  { id: 'shizuoka', name: '静岡銀行', short: '静岡', color: 'bg-[#f58220]' },
+  { id: 'kyoto', name: '京都銀行', short: '京都', color: 'bg-[#00552e]' },
+  { id: '77', name: '七十七銀行', short: '七十七', color: 'bg-[#005ea1]' },
+  { id: 'hiroshima', name: '広島銀行', short: '広島', color: 'bg-[#003399]' },
 ];
 
 export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccounts, apiBase }) => {
