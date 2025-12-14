@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Fingerprint, Scan, ShieldCheck, ArrowRight, Activity, Command, Lock, AlertOctagon } from 'lucide-react';
+import { Fingerprint, Scan, ShieldCheck, ArrowRight, Activity, Command, Lock, AlertOctagon, Key } from 'lucide-react';
 import { BankGateway } from '../services/BankGateway';
 
 interface LoginProps {
@@ -9,6 +9,7 @@ interface LoginProps {
 
 export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
   const [account, setAccount] = useState('1190212');
+  const [password, setPassword] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [status, setStatus] = useState('Secure Connection Est.');
   const [error, setError] = useState<string | null>(null);
@@ -35,14 +36,14 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
     setError(null);
     
-    // STRICT ID GUARD
-    if (account === '1190212') {
+    // STRICT ID & PASSWORD GUARD
+    if (account === '1190212' && password === '010612') {
         BankGateway.logAuth(true, account, "Biometric Challenge Started");
         handleBiometricAuth();
     } else {
-        const msg = "ACCESS DENIED: ID MISMATCH";
+        const msg = "ACCESS DENIED: INVALID CREDENTIALS";
         setError(msg);
-        BankGateway.logAuth(false, account, "Invalid ID Provided");
+        BankGateway.logAuth(false, account, "Invalid ID/PW Provided");
         
         // Shake effect or similar could be added here
         setStatus("SECURITY ALERT: UNAUTHORIZED");
@@ -78,7 +79,7 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
                 <span className="text-4xl text-white drop-shadow-md">💠</span>
             </div>
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-indigo-200 tracking-tight mb-2">
-                Godmode Bank
+                TK Global Bank
             </h1>
             <p className="text-sm text-slate-400 font-mono tracking-widest uppercase flex items-center justify-center gap-2">
                 <Lock size={12} className="text-amber-500" /> ID GUARD: ACTIVE
@@ -119,7 +120,7 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
                     <div className="space-y-2">
                         <div className="flex justify-between">
                             <label className="text-xs font-bold text-slate-400 ml-1 uppercase">Account ID</label>
-                            <span className="text-[10px] text-amber-500 bg-amber-900/20 px-2 py-0.5 rounded border border-amber-500/30">1190212 REQUIRED</span>
+                            <span className="text-[10px] text-amber-500 bg-amber-900/20 px-2 py-0.5 rounded border border-amber-500/30">1190212</span>
                         </div>
                         <div className="relative group">
                             <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-xl opacity-0 group-hover:opacity-30 transition duration-500"></div>
@@ -131,6 +132,23 @@ export const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
                                 autoFocus
                             />
                             <ShieldCheck size={20} className={`absolute right-4 top-1/2 -translate-y-1/2 ${error ? 'text-red-500' : 'text-slate-600'}`} />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex justify-between">
+                            <label className="text-xs font-bold text-slate-400 ml-1 uppercase">Password</label>
+                        </div>
+                        <div className="relative group">
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-xl opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                            <input 
+                                type="password"
+                                className={`relative w-full bg-slate-950/80 border rounded-xl px-4 py-4 text-white placeholder-slate-600 outline-none transition-all font-mono tracking-widest text-lg ${error ? 'border-red-500/50 focus:border-red-500' : 'border-slate-700 focus:border-cyan-500/50'}`}
+                                placeholder="••••••" 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <Key size={20} className={`absolute right-4 top-1/2 -translate-y-1/2 ${error ? 'text-red-500' : 'text-slate-600'}`} />
                         </div>
                     </div>
 

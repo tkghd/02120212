@@ -55,12 +55,12 @@ BankGateway.init(API_BASE);
 // Mock Data for Fallback
 const MOCK_HEALTH: ApiHealth = {
   status: "ONLINE (VERCEL-SYNC)",
-  service: "Godmode Core (Team)",
-  version: "2.5.1-V-TEAM",
-  buildId: "BLAST-READY",
+  service: "TK Global Core (Team)",
+  version: "tk_global_bank_full_submodules.prod",
+  buildId: "LATEST_BUILD_DEPLOY_SUCCESS",
   environment: "PRODUCTION",
   licenseStatus: "GODMODE",
-  licenseId: "∞",
+  licenseId: "1190212",
   corpId: "team_y4Iet78sTSfhEyA4qzPLybxz",
   timestamp: new Date().toISOString()
 };
@@ -160,15 +160,15 @@ const AppContent: React.FC = () => {
            </div>
            <div className="flex flex-col">
              <h1 className="text-lg font-bold text-white tracking-tight leading-none">
-               TK globalBank
+               TK Global Bank
              </h1>
              <div className="flex items-center gap-2 mt-1">
                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-cyan-400"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-red-400"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                </span>
-               <span className="text-[10px] font-mono tracking-wider font-bold text-cyan-400 flex items-center gap-1">
-                 <Lock size={8} /> PRODUCTION LANE: FIXED
+               <span className="text-[10px] font-mono tracking-wider font-bold text-red-400 flex items-center gap-1">
+                 <Lock size={8} /> PRODUCTION LANE: LOCKED
                </span>
              </div>
            </div>

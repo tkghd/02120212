@@ -20,18 +20,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ modules, booted, wallet, q
   const { theme } = useTheme();
 
   const prodModules = [
-      { name: 'AUTH', status: 'LOCKED', impact: 'ID: 1190212', icon: <Lock size={10} />, color: 'text-amber-400', bg: 'bg-amber-900/20', border: 'border-amber-500/30' },
+      { name: 'BUILD', status: 'SUCCESS', impact: 'Deploy', icon: <CheckCircle2 size={10} />, color: 'text-green-400', bg: 'bg-green-900/20', border: 'border-green-500/30' },
+      { name: 'DEPLOY', status: 'LIVE', impact: 'Vercel', icon: <Rocket size={10} />, color: 'text-blue-400', bg: 'bg-blue-900/20', border: 'border-blue-500/30' },
+      { name: 'MODULES', status: 'ONLINE', impact: 'All Systems', icon: <Boxes size={10} />, color: 'text-purple-400', bg: 'bg-purple-900/20', border: 'border-purple-500/30' },
+      { name: 'BANK API', status: 'LIVE', impact: 'Gateway', icon: <Globe size={10} />, color: 'text-cyan-400', bg: 'bg-cyan-900/20', border: 'border-cyan-500/30' },
+      { name: 'PWA UI/UX', status: 'ACTIVE', impact: 'Interface', icon: <Smartphone size={10} />, color: 'text-indigo-400', bg: 'bg-indigo-900/20', border: 'border-indigo-500/30' },
+      { name: 'SUBMODULES', status: 'SYNCED', impact: 'Integration', icon: <Database size={10} />, color: 'text-amber-400', bg: 'bg-amber-900/20', border: 'border-amber-500/30' },
+      { name: 'AUTH', status: 'LOCKED', impact: 'ID: 1190212', icon: <Lock size={10} />, color: 'text-red-400', bg: 'bg-red-900/20', border: 'border-red-500/30' },
       { name: 'REALapi', status: 'LIVE', impact: 'Transactions', icon: <Zap size={10} />, color: 'text-red-400', bg: 'bg-red-900/20', border: 'border-red-500/30' },
-      { name: 'BANK Gateway', status: 'CONNECTED', impact: 'External Link', icon: <Globe size={10} />, color: 'text-blue-400', bg: 'bg-blue-900/20', border: 'border-blue-500/30' },
       { name: 'LICENSE', status: 'VERIFIED', impact: 'Legal', icon: <ShieldCheck size={10} />, color: 'text-green-400', bg: 'bg-green-900/20', border: 'border-green-500/30' },
       { name: 'AUDIT', status: 'ACTIVE', impact: 'Compliance', icon: <FileText size={10} />, color: 'text-amber-400', bg: 'bg-amber-900/20', border: 'border-amber-500/30' },
-      { name: 'UI/UX', status: 'SYNCED', impact: 'Interface', icon: <Boxes size={10} />, color: 'text-purple-400', bg: 'bg-purple-900/20', border: 'border-purple-500/30' },
       { name: 'HEALTH', status: 'MONITORED', impact: 'System', icon: <Activity size={10} />, color: 'text-pink-400', bg: 'bg-pink-900/20', border: 'border-pink-500/30' },
-      { name: 'LEGAL', status: 'SEALED', impact: 'Corporate', icon: <Scale size={10} />, color: 'text-slate-300', bg: 'bg-slate-800/50', border: 'border-slate-600/30' },
-      { name: 'ADMIN', status: 'ONLINE', impact: 'Control', icon: <Terminal size={10} />, color: 'text-cyan-400', bg: 'bg-cyan-900/20', border: 'border-cyan-500/30' },
-      { name: 'PWA', status: 'INSTALLED', impact: 'Mobile', icon: <Smartphone size={10} />, color: 'text-indigo-400', bg: 'bg-indigo-900/20', border: 'border-indigo-500/30' },
       { name: 'DATA', status: 'STREAMING', impact: 'Realtime', icon: <Database size={10} />, color: 'text-emerald-400', bg: 'bg-emerald-900/20', border: 'border-emerald-500/30' },
-      { name: 'WEB', status: 'PUBLIC', impact: 'Global', icon: <Rocket size={10} />, color: 'text-sky-400', bg: 'bg-sky-900/20', border: 'border-sky-500/30' },
   ];
 
   return (

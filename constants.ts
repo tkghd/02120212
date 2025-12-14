@@ -1,5 +1,4 @@
 
-
 import { SystemModule, WalletState, QueueState, BusinessEntity, OwnerAccount } from './types';
 
 export const INITIAL_MODULES: SystemModule[] = [
@@ -62,7 +61,10 @@ export const STARTUP_LOGS = [
   "🔥 GODMODE ULTIMATE ENGINE STARTING...",
   "💎♾️ GODMODE ULTIMATE DEPLOY COMPLETE ✅",
   "🌐 GLOBAL BANK / DEX / WALLET / NFT / AI fully synced",
-  "💠 HUD Access: /ai_hud | Card UI: Ultimate | Realtime: 0ms Latency"
+  "💠 HUD Access: /ai_hud | Card UI: Ultimate | Realtime: 0ms Latency",
+  "[SYNC] Domain: https://tkghd.vercel.app [VERIFIED]",
+  "[BUILD] tk_global_bank_full_submodules.prod [SUCCESS]",
+  "[AUTH] ID: 1190212 | MODE: PRODUCTION [LOCKED]"
 ];
 
 export const BUSINESS_PORTFOLIO: BusinessEntity[] = [
