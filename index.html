@@ -27,39 +27,50 @@
         background: #334155; 
       }
 
-      /* Animation Utilities - Limit UI/UX */
+      /* Animation Utilities - High-End Easing */
       .perspective-1000 { perspective: 1000px; }
       .preserve-3d { transform-style: preserve-3d; }
       
+      :root {
+        --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+        --ease-out-circ: cubic-bezier(0.075, 0.82, 0.165, 1);
+        --ease-in-out-hard: cubic-bezier(0.8, 0, 0.2, 1);
+      }
+      
       @keyframes enterFromRight {
-        from { opacity: 0; transform: translateX(20px); }
-        to { opacity: 1; transform: translateX(0); }
+        from { opacity: 0; transform: translateX(30px) scale(0.98); filter: blur(4px); }
+        to { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
       }
       
       @keyframes enterFromBottom {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
+        from { opacity: 0; transform: translateY(40px) scale(0.95); filter: blur(4px); }
+        to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+      }
+      
+      @keyframes scaleUp {
+        from { opacity: 0; transform: scale(0.9); filter: blur(2px); }
+        to { opacity: 1; transform: scale(1); filter: blur(0); }
       }
       
       @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from { opacity: 0; filter: blur(2px); }
+        to { opacity: 1; filter: blur(0); }
       }
       
       @keyframes float {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-8px); }
+        50% { transform: translateY(-6px); }
       }
 
       @keyframes pulseGlow {
         0%, 100% { box-shadow: 0 0 20px rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.2); }
-        50% { box-shadow: 0 0 35px rgba(6,182,212,0.3); border-color: rgba(6,182,212,0.5); }
+        50% { box-shadow: 0 0 40px rgba(6,182,212,0.4); border-color: rgba(6,182,212,0.6); }
       }
 
       @keyframes scanline {
         0% { transform: translateY(-100%); opacity: 0; }
-        10% { opacity: 1; }
-        90% { opacity: 1; }
+        15% { opacity: 1; }
+        85% { opacity: 1; }
         100% { transform: translateY(100%); opacity: 0; }
       }
 
@@ -68,29 +79,42 @@
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
       }
+      
+      @keyframes shimmer {
+        0% { transform: translateX(-100%) skewX(-15deg); }
+        100% { transform: translateX(200%) skewX(-15deg); }
+      }
 
       /* Utility Classes */
-      .anim-enter-right { animation: enterFromRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-      .anim-enter-bottom { animation: enterFromBottom 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-      .anim-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+      .anim-enter-right { opacity: 0; animation: enterFromRight 0.8s var(--ease-out-expo) forwards; }
+      .anim-enter-bottom { opacity: 0; animation: enterFromBottom 0.8s var(--ease-out-expo) forwards; }
+      .anim-scale-up { opacity: 0; animation: scaleUp 0.6s var(--ease-out-expo) forwards; }
+      .anim-fade-in { opacity: 0; animation: fadeIn 0.5s ease-out forwards; }
+      
       .anim-float { animation: float 6s ease-in-out infinite; }
       .anim-pulse-glow { animation: pulseGlow 3s infinite; }
-      .anim-scanline { animation: scanline 2.5s linear infinite; }
-      .anim-gradient { background-size: 200% 200%; animation: gradientBG 10s ease infinite; }
+      .anim-scanline { animation: scanline 3s linear infinite; }
+      .anim-gradient { background-size: 200% 200%; animation: gradientBG 15s ease infinite; }
       
       /* Glassmorphism Utilities */
       .glass-panel {
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
       }
 
       /* Stagger Delays */
-      .anim-delay-100 { animation-delay: 100ms; opacity: 0; animation-fill-mode: forwards; }
-      .anim-delay-200 { animation-delay: 200ms; opacity: 0; animation-fill-mode: forwards; }
-      .anim-delay-300 { animation-delay: 300ms; opacity: 0; animation-fill-mode: forwards; }
-      .anim-delay-500 { animation-delay: 500ms; opacity: 0; animation-fill-mode: forwards; }
+      .anim-delay-0 { animation-delay: 0ms; }
+      .anim-delay-50 { animation-delay: 50ms; }
+      .anim-delay-100 { animation-delay: 100ms; }
+      .anim-delay-150 { animation-delay: 150ms; }
+      .anim-delay-200 { animation-delay: 200ms; }
+      .anim-delay-300 { animation-delay: 300ms; }
+      .anim-delay-400 { animation-delay: 400ms; }
+      .anim-delay-500 { animation-delay: 500ms; }
+      .anim-delay-700 { animation-delay: 700ms; }
+      .anim-delay-1000 { animation-delay: 1000ms; }
     </style>
   <script type="importmap">
 {

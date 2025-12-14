@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Landmark, Globe, CreditCard, Plus, ArrowRight, ShieldCheck, Banknote, Building2, CheckCircle2, AlertCircle, RefreshCw, Zap, Cpu, Scan, ArrowDownToLine, Settings, Copy, Activity, Server, Radio, Network, Database, Save, Trash2, Hash, FileText, BookOpen, UserCheck, FileUp, ScanFace, Shield, Upload, Camera, X } from 'lucide-react';
+import { Landmark, Globe, CreditCard, Plus, ArrowRight, ShieldCheck, Banknote, Building2, CheckCircle2, AlertCircle, RefreshCw, Zap, Cpu, Scan, ArrowDownToLine, Settings, Copy, Activity, Server, Radio, Network, Database, Save, Trash2, Hash, FileText, BookOpen, UserCheck, FileUp, ScanFace, Shield, Upload, Camera, X, Lock, Search } from 'lucide-react';
 import { ActiveTab } from '../types';
+import { BankGateway } from '../services/BankGateway';
 
 type ServiceTab = 'accounts' | 'transfer_intl' | 'loans' | 'admin_registry' | 'directory' | 'kyc';
 
@@ -170,17 +171,19 @@ export const BankServicesView: React.FC<BankServicesViewProps> = ({ onNavigate }
     if (country) {
         setIsFetchingInfo(true);
         setGeneratedAccount(null);
-        setBankNetworkStatus(prev => ({ ...prev, status: 'SYNCING...' }));
+        setBankNetworkStatus(prev => ({ ...prev, status: 'GATEWAY SYNCING...' }));
         
-        // Simulate async network fetch for bank details
-        setTimeout(() => {
+        // Use BankGateway to simulate latency check
+        setTimeout(async () => {
             setSelectedCountry(country);
             
-            // Generate random network stats
+            // Use Gateway logic for latency if possible, or just mock here linked to gateway
+            const latencyVal = Math.floor(Math.random() * 40) + 15 + 'ms';
+            
             setBankNetworkStatus({
                 clearing: country.desc.split(' / ')[0] + ' Network',
-                latency: Math.floor(Math.random() * 40) + 5 + 'ms',
-                status: 'OPERATIONAL',
+                latency: latencyVal,
+                status: 'GATEWAY_LOCKED',
                 settlement: new Date(Date.now() + 3600000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' (Next Batch)'
             });
             
@@ -209,7 +212,8 @@ export const BankServicesView: React.FC<BankServicesViewProps> = ({ onNavigate }
 
   const generateAccountDetails = () => {
     setIsGenerating(true);
-    setTimeout(() => {
+    // Use BankGateway to "Inquire" or setup
+    setTimeout(async () => {
         // Use Mock Generator
         const isIBAN = ['EU','DE','FR','CH','GB','AE','IT','ES','NL','SE','TR','BE','PL','SA'].includes(selectedCountry.code);
         
@@ -218,6 +222,9 @@ export const BankServicesView: React.FC<BankServicesViewProps> = ({ onNavigate }
             : MockBankGenerator.generateLocal(selectedCountry.code);
 
         const swiftCode = MockBankGenerator.generateSWIFT(selectedCountry.code);
+
+        // Simulate Gateway registration
+        await BankGateway.inquireBalance({ accountId: accountNumber, bankCode: selectedCountry.code });
 
         setGeneratedAccount({
             country: selectedCountry.name,
@@ -329,14 +336,21 @@ export const BankServicesView: React.FC<BankServicesViewProps> = ({ onNavigate }
            </h2>
            <p className="text-xs text-slate-400 font-mono mt-1">Global Banking Services & Credit Protocol</p>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1 max-w-[50%] md:max-w-none">
+        <div className="flex flex-col items-end gap-1">
+            <span className="text-[10px] bg-green-900/30 text-green-400 border border-green-500/30 px-2 py-0.5 rounded font-bold animate-pulse flex items-center gap-1">
+                <Lock size={10} /> Gateway: CONNECTED
+            </span>
+        </div>
+      </div>
+      
+      {/* Tab Navigation */}
+      <div className="flex gap-2 overflow-x-auto pb-1 max-w-[100%]">
             <TabButton active={activeTab === 'accounts'} onClick={() => setActiveTab('accounts')} label="Accounts" icon={<Plus size={14} />} />
             <TabButton active={activeTab === 'transfer_intl'} onClick={() => setActiveTab('transfer_intl')} label="Intl. Wire" icon={<Globe size={14} />} />
             <TabButton active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} label="Lending" icon={<Banknote size={14} />} />
             <TabButton active={activeTab === 'kyc'} onClick={() => setActiveTab('kyc')} label="KYC" icon={<UserCheck size={14} />} />
             <TabButton active={activeTab === 'directory'} onClick={() => setActiveTab('directory')} label="Directory" icon={<BookOpen size={14} />} />
             <TabButton active={activeTab === 'admin_registry'} onClick={() => setActiveTab('admin_registry')} label="Registry" icon={<Database size={14} />} />
-        </div>
       </div>
 
       {/* AI Command Nexus */}
@@ -418,465 +432,337 @@ export const BankServicesView: React.FC<BankServicesViewProps> = ({ onNavigate }
                               <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm z-20 flex items-center justify-center rounded-xl">
                                   <div className="flex flex-col items-center gap-3">
                                       <RefreshCw size={24} className="text-cyan-500 animate-spin" />
-                                      <span className="text-xs text-cyan-400 font-mono tracking-widest">CONNECTING TO {selectedCountry.name.toUpperCase()}...</span>
+                                      <span className="text-xs text-cyan-500 font-mono animate-pulse">Syncing...</span>
                                   </div>
                               </div>
-                          ) : (
-                              <>
-                                  <div className="flex justify-between items-start mb-3 relative z-10">
-                                      <label className="text-xs font-bold text-slate-400 uppercase block flex items-center gap-2">
-                                         <Network size={12} /> Banking Standards
-                                      </label>
-                                      <span className="flex items-center gap-1 text-[10px] text-green-400 font-mono bg-green-900/20 px-1.5 py-0.5 rounded border border-green-500/20">
-                                          <Activity size={10} /> {bankNetworkStatus.latency}
-                                      </span>
-                                  </div>
-                                  <div className="space-y-3 text-sm relative z-10">
-                                      <div className="flex justify-between p-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                                          <span className="text-slate-400 text-xs">SWIFT / BIC Code</span>
-                                          <span className="font-mono text-cyan-400 font-bold">{selectedCountry.swift}</span>
-                                      </div>
-                                      <div className="flex justify-between p-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                                          <span className="text-slate-400 text-xs">Format</span>
-                                          <span className="font-mono text-white text-xs truncate max-w-[160px]">{selectedCountry.format}</span>
-                                      </div>
-                                      <div className="pt-2 border-t border-slate-800/50 flex justify-between items-center mt-1">
-                                          <span className="text-[10px] text-slate-500 flex items-center gap-1"><Server size={10} /> {bankNetworkStatus.clearing}</span>
-                                          <span className="text-[10px] text-green-400 font-bold tracking-wide">{bankNetworkStatus.status}</span>
-                                      </div>
-                                  </div>
-                              </>
-                          )}
+                          ) : null}
+                          
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                             <div>
+                                 <div className="text-slate-500">Network</div>
+                                 <div className="text-white font-bold">{bankNetworkStatus.clearing}</div>
+                             </div>
+                             <div>
+                                 <div className="text-slate-500">Latency</div>
+                                 <div className="text-green-400 font-mono">{bankNetworkStatus.latency}</div>
+                             </div>
+                             <div>
+                                 <div className="text-slate-500">Status</div>
+                                 <div className="text-cyan-400 font-bold">{bankNetworkStatus.status}</div>
+                             </div>
+                             <div>
+                                 <div className="text-slate-500">Settlement</div>
+                                 <div className="text-white font-mono">{bankNetworkStatus.settlement}</div>
+                             </div>
+                          </div>
                       </div>
                   </div>
 
-                  {!generatedAccount ? (
-                      <button 
-                        onClick={generateAccountDetails}
-                        disabled={isGenerating || isFetchingInfo}
-                        className="w-full py-4 bg-gradient-to-r from-cyan-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 hover:scale-[1.01] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                          {isGenerating ? <RefreshCw size={18} className="animate-spin" /> : <Zap size={18} fill="currentColor" />}
-                          {isGenerating ? 'Connecting to Global Ledger...' : 'Generate New Account Credentials'}
-                      </button>
-                  ) : (
-                      <div className="bg-[#05050a] border border-slate-800 rounded-xl p-5 anim-enter-bottom shadow-2xl relative overflow-hidden">
-                          {/* Decorative Elements */}
-                          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 blur-3xl rounded-full"></div>
-                          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full"></div>
-
-                          <div className="flex justify-between items-start mb-6 relative z-10">
+                  {generatedAccount && (
+                      <div className="bg-gradient-to-r from-indigo-900/40 to-slate-900 border border-indigo-500/30 rounded-xl p-6 mb-6 anim-enter-bottom">
+                          <div className="flex justify-between items-start mb-4">
                               <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 bg-gradient-to-br from-cyan-600 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg">
-                                      <CheckCircle2 size={24} />
+                                  <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center text-2xl shadow-lg">
+                                      {generatedAccount.flag}
                                   </div>
                                   <div>
-                                      <h4 className="font-bold text-white leading-tight">Account Generated</h4>
-                                      <p className="text-[10px] text-cyan-400 font-mono">Status: ACTIVE • KYC: BYPASSED</p>
+                                      <div className="text-white font-bold text-lg">{generatedAccount.type}</div>
+                                      <div className="text-xs text-indigo-300 font-mono">Created: {generatedAccount.timestamp}</div>
                                   </div>
                               </div>
-                              <button 
-                                onClick={() => setGeneratedAccount(null)}
-                                className="text-xs text-slate-500 hover:text-white underline"
-                              >
-                                Close
-                              </button>
+                              <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded border border-green-500/30">ACTIVE</span>
                           </div>
                           
-                          <div className="space-y-4 relative z-10">
-                              {/* Account Number Block */}
-                              <div className="bg-slate-900/80 rounded-xl p-4 border border-slate-700/50 group cursor-pointer hover:border-cyan-500/30 transition-all" onClick={() => navigator.clipboard.writeText(generatedAccount.accountNumber)}>
-                                  <div className="flex justify-between items-center mb-1">
-                                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{generatedAccount.isIBAN ? 'IBAN Number' : 'Account Number'}</span>
-                                      <Copy size={12} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
-                                  </div>
-                                  <div className="text-lg font-mono text-white font-bold tracking-wide break-all">
-                                      {generatedAccount.accountNumber}
-                                  </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-mono">
+                              <div className="bg-black/30 p-3 rounded-lg border border-slate-800">
+                                  <div className="text-xs text-slate-500 mb-1">Beneficiary Name</div>
+                                  <div className="text-white font-bold">TK GLOBAL HOLDINGS LTD</div>
                               </div>
+                              <div className="bg-black/30 p-3 rounded-lg border border-slate-800">
+                                  <div className="text-xs text-slate-500 mb-1">{generatedAccount.isIBAN ? 'IBAN' : 'Account Number'}</div>
+                                  <div className="text-cyan-400 font-bold tracking-wider">{generatedAccount.accountNumber}</div>
+                              </div>
+                              <div className="bg-black/30 p-3 rounded-lg border border-slate-800">
+                                  <div className="text-xs text-slate-500 mb-1">SWIFT / BIC</div>
+                                  <div className="text-white font-bold">{generatedAccount.swift}</div>
+                              </div>
+                              <div className="bg-black/30 p-3 rounded-lg border border-slate-800">
+                                  <div className="text-xs text-slate-500 mb-1">Currency</div>
+                                  <div className="text-white font-bold">{generatedAccount.currency}</div>
+                              </div>
+                          </div>
 
-                              {/* SWIFT Block */}
-                              <div className="bg-slate-900/80 rounded-xl p-4 border border-slate-700/50 group cursor-pointer hover:border-cyan-500/30 transition-all" onClick={() => navigator.clipboard.writeText(generatedAccount.swift)}>
-                                  <div className="flex justify-between items-center mb-1">
-                                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">SWIFT / BIC Code</span>
-                                      <Copy size={12} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
-                                  </div>
-                                  <div className="text-lg font-mono text-cyan-400 font-bold tracking-widest">
-                                      {generatedAccount.swift}
-                                  </div>
-                              </div>
-                          </div>
-                          
-                          <div className="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center relative z-10">
-                              <div className="text-xs text-slate-500 flex items-center gap-2">
-                                  <FileText size={12} /> {generatedAccount.country}
-                              </div>
-                              <div className="text-right">
-                                  <span className="text-[10px] text-slate-500 block">Initial Limit</span>
-                                  <span className="text-green-400 font-bold font-mono text-xs">UNLIMITED</span>
-                              </div>
+                          <div className="mt-4 flex gap-3">
+                              <button className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+                                  <Copy size={16} /> Copy Details
+                              </button>
+                              <button className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg transition-colors">
+                                  Download PDF
+                              </button>
                           </div>
                       </div>
                   )}
-              </div>
 
-              {/* Active Accounts List */}
-              <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase">Your Global Accounts</h4>
-                  <AccountCard region="EU" iban="LT45 7300 0099 1234 5678" currency="EUR" balance="€ 4,500,000" bank="TK Global Bank (Lithuania)" />
-                  <AccountCard region="US" iban="Routing: 021000021 / Acc: 987654321" currency="USD" balance="$ 12,250,000" bank="TK Global Bank (NY Branch)" />
-                  <AccountCard region="SG" iban="DBS-Link-888-999-000" currency="SGD" balance="S$ 8,888,888" bank="DBS / TK Trust" />
-                  <AccountCard region="KR" iban="082-20-999999" currency="KRW" balance="₩ 5,000,000,000" bank="TK Global Bank (Seoul)" />
+                  <button 
+                     onClick={generateAccountDetails}
+                     disabled={isGenerating || isFetchingInfo}
+                     className="w-full py-4 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                     {isGenerating ? <RefreshCw size={20} className="animate-spin" /> : <Plus size={20} />}
+                     {isGenerating ? 'Registering with Central Bank...' : 'Instant Generate Account'}
+                  </button>
               </div>
           </div>
       )}
 
       {activeTab === 'transfer_intl' && (
           <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-400 border border-indigo-500/20">
-                      <Globe size={24} />
-                  </div>
-                  <div>
-                      <h3 className="text-lg font-bold text-white">SWIFT / SEPA Transfer</h3>
-                      <p className="text-xs text-slate-400">International Wire Protocol</p>
-                  </div>
-              </div>
-
-              <div className="space-y-4">
-                  <div className="relative">
-                      <Hash size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-                      <input type="text" placeholder="SWIFT / BIC Code" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 pl-12 py-3 text-white font-mono placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
-                  </div>
-                  <div className="relative">
-                      <CreditCard size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-                      <input type="text" placeholder="IBAN / Account Number" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 pl-12 py-3 text-white font-mono placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
-                  </div>
-                  <input type="text" placeholder="Beneficiary Name" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none" />
-                  
-                  <div className="pt-4 border-t border-slate-800">
-                      <div className="flex justify-between items-end mb-2">
-                          <label className="text-xs font-bold text-slate-400">Amount</label>
-                          <span className="text-xs text-indigo-400 font-mono">Fee: Waived (Godmode)</span>
-                      </div>
-                      <input type="text" placeholder="0.00" className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-4 text-2xl font-bold text-white text-right placeholder-slate-700 focus:border-indigo-500 focus:outline-none" />
-                  </div>
-
-                  <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 mt-4 shadow-lg shadow-indigo-500/20">
-                      Initiate Wire Transfer <ArrowRight size={18} />
+              <div className="text-center py-10 text-slate-500">
+                  <Globe size={48} className="mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-bold text-white">International Wire Transfer</h3>
+                  <p className="text-sm">Secure SWIFT/SEPA transfers are available in the <span className="text-indigo-400 font-bold">Transfers</span> tab.</p>
+                  <button onClick={() => onNavigate('transfer')} className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-500 transition-colors">
+                      Go to Transfers
                   </button>
               </div>
           </div>
       )}
 
       {activeTab === 'loans' && (
-          <div className="space-y-6">
-              {/* Loan AI Dashboard */}
-              <div className="bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/30 rounded-2xl p-6 relative overflow-hidden">
-                  <div className="flex justify-between items-start mb-6">
-                      <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                              <Building2 className="text-white" size={20} />
-                          </div>
-                          <div>
-                              <h3 className="text-lg font-bold text-white">Lending AI Core</h3>
-                              <p className="text-xs text-indigo-300">Instant Credit Protocol</p>
-                          </div>
-                      </div>
-                      <div className="text-right">
-                          <div className="text-xs text-slate-400 uppercase font-bold">Available Credit</div>
-                          <div className="text-2xl font-mono font-bold text-green-400">¥ 500,000,000</div>
-                      </div>
-                  </div>
+          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Banknote size={120} /></div>
+               <h3 className="text-lg font-bold text-white mb-6">Instant Credit Line (AI Underwritten)</h3>
+               
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                   <div className="bg-black/20 p-4 rounded-xl border border-slate-800">
+                       <div className="text-xs text-slate-500 uppercase font-bold mb-1">Available Limit</div>
+                       <div className="text-2xl font-mono text-green-400 font-bold">$ 5,000,000</div>
+                   </div>
+                   <div className="bg-black/20 p-4 rounded-xl border border-slate-800">
+                       <div className="text-xs text-slate-500 uppercase font-bold mb-1">Interest Rate</div>
+                       <div className="text-2xl font-mono text-indigo-400 font-bold">0.5% <span className="text-xs text-slate-500">APR</span></div>
+                   </div>
+                   <div className="bg-black/20 p-4 rounded-xl border border-slate-800">
+                       <div className="text-xs text-slate-500 uppercase font-bold mb-1">Approval Time</div>
+                       <div className="text-2xl font-mono text-cyan-400 font-bold">Instant</div>
+                   </div>
+               </div>
 
-                  {!loanApproved ? (
-                      <div className="space-y-4">
-                          <div className="p-4 bg-black/30 rounded-xl border border-slate-700">
-                              <div className="flex justify-between mb-2">
-                                  <span className="text-sm text-slate-300">Requested Amount</span>
-                                  <span className="text-sm font-bold text-white">¥ 100,000,000</span>
-                              </div>
-                              <input type="range" className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
-                          </div>
-                          <button 
-                              onClick={() => {
-                                  setLoanProcessing(true);
-                                  setTimeout(() => { setLoanProcessing(false); setLoanApproved(true); }, 2000);
-                              }}
-                              disabled={loanProcessing}
-                              className="w-full py-4 bg-white text-indigo-900 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors"
-                          >
-                              {loanProcessing ? (
-                                  <>
-                                      <RefreshCw size={18} className="animate-spin" /> Analyzing Credit Score...
-                                  </>
-                              ) : (
-                                  <>
-                                      <Zap size={18} fill="currentColor" /> Instant Approval Request
-                                  </>
-                              )}
-                          </button>
-                      </div>
-                  ) : (
-                      <div className="text-center py-8 animate-in zoom-in-95">
-                          <div className="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/50">
-                              <CheckCircle2 size={32} />
-                          </div>
-                          <h3 className="text-xl font-bold text-white mb-2">Loan Approved</h3>
-                          <p className="text-slate-400 text-sm mb-6">Funds have been disbursed to your main vault.</p>
-                          <button onClick={() => setLoanApproved(false)} className="px-6 py-2 bg-slate-800 text-white rounded-lg text-sm font-bold">
-                              Dismiss
-                          </button>
-                      </div>
-                  )}
-              </div>
-
-              {/* Active Loans */}
-              <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase">Active Credit Lines</h4>
-                  <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex justify-between items-center">
-                      <div>
-                          <div className="font-bold text-white">Corporate Growth Fund</div>
-                          <div className="text-xs text-slate-500">Interest: 1.2% APR (Fixed)</div>
-                      </div>
-                      <div className="text-right">
-                          <div className="font-mono text-white">¥ 50,000,000</div>
-                          <div className="text-xs text-green-400">Active</div>
-                      </div>
-                  </div>
-              </div>
+               {loanApproved ? (
+                   <div className="bg-green-900/20 border border-green-500/30 p-6 rounded-xl text-center anim-enter-bottom">
+                       <CheckCircle2 size={48} className="text-green-500 mx-auto mb-4" />
+                       <h3 className="text-xl font-bold text-white mb-2">Funds Disbursed</h3>
+                       <p className="text-sm text-green-300 mb-4">Your credit line has been successfully activated. Funds are available in your main wallet.</p>
+                       <button onClick={() => setLoanApproved(false)} className="px-6 py-2 bg-slate-800 text-white rounded-lg font-bold">Close</button>
+                   </div>
+               ) : (
+                   <button 
+                    onClick={() => {
+                        setLoanProcessing(true);
+                        setTimeout(() => {
+                            setLoanProcessing(false);
+                            setLoanApproved(true);
+                            simulateAiAction('Credit Line Approved & Disbursed');
+                        }, 2000);
+                    }}
+                    disabled={loanProcessing}
+                    className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                   >
+                       {loanProcessing ? <RefreshCw size={20} className="animate-spin" /> : <Zap size={20} />}
+                       {loanProcessing ? 'AI Underwriting in Progress...' : 'Draw Funds Now'}
+                   </button>
+               )}
           </div>
       )}
 
       {activeTab === 'kyc' && (
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 anim-enter-right">
-              <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-400 border border-emerald-500/20">
-                      <ShieldCheck size={24} />
-                  </div>
-                  <div>
-                      <h3 className="text-lg font-bold text-white">KYC Verification</h3>
-                      <p className="text-xs text-slate-400">Identity Protocol & Biometrics</p>
-                  </div>
-                  <div className="ml-auto">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                          kycStatus === 'verified' ? 'bg-green-900/30 text-green-400 border-green-500/30' : 
-                          kycStatus === 'pending' ? 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30' :
-                          'bg-slate-800 text-slate-400 border-slate-700'
-                      }`}>
-                          STATUS: {kycStatus.toUpperCase()}
-                      </span>
+          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                      <ScanFace size={24} className="text-cyan-500" /> Identity Verification (eKYC)
+                  </h3>
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${
+                      kycStatus === 'verified' ? 'bg-green-900/30 text-green-400 border border-green-500/30' :
+                      kycStatus === 'pending' ? 'bg-amber-900/30 text-amber-400 border border-amber-500/30' :
+                      'bg-slate-800 text-slate-400 border border-slate-700'
+                  }`}>
+                      {kycStatus === 'verified' ? <CheckCircle2 size={12} /> : kycStatus === 'pending' ? <RefreshCw size={12} className="animate-spin" /> : <AlertCircle size={12} />}
+                      {kycStatus.toUpperCase()}
                   </div>
               </div>
 
               {kycStatus === 'verified' ? (
-                  <div className="bg-gradient-to-r from-emerald-900/20 to-slate-900 border border-emerald-500/30 rounded-xl p-8 text-center animate-in zoom-in-95">
-                      <div className="w-20 h-20 mx-auto bg-emerald-500/10 rounded-full flex items-center justify-center mb-4 ring-1 ring-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
-                          <ShieldCheck size={40} className="text-emerald-400" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-white mb-2">Identity Verified</h3>
-                      <p className="text-slate-400 mb-6 max-w-md mx-auto">You have full access to all global banking features, including unlimited transfers and high-leverage credit.</p>
-                      <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto text-left text-xs bg-black/20 p-4 rounded-xl border border-emerald-500/20">
-                          <div>
-                              <span className="text-slate-500 block">Clearance Level</span>
-                              <span className="text-white font-bold">Level 4 (Godmode)</span>
-                          </div>
-                          <div>
-                              <span className="text-slate-500 block">Biometrics</span>
-                              <span className="text-emerald-400 font-bold">Enrolled</span>
-                          </div>
-                      </div>
+                  <div className="text-center py-10">
+                      <ShieldCheck size={64} className="text-green-500 mx-auto mb-4" />
+                      <h3 className="text-xl font-bold text-white">Verification Complete</h3>
+                      <p className="text-slate-400 mt-2">You have Level 4 clearance. Unlimited global transfers enabled.</p>
                   </div>
               ) : kycStatus === 'pending' ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <RefreshCw size={48} className="text-yellow-500 animate-spin mb-6" />
-                      <h3 className="text-xl font-bold text-white mb-2">Verification in Progress</h3>
-                      <p className="text-slate-400 max-w-sm">The AI Core is analyzing your documents and biometric data. This usually takes less than 5 minutes.</p>
+                   <div className="text-center py-10">
+                      <div className="relative w-20 h-20 mx-auto mb-6">
+                          <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
+                          <div className="absolute inset-0 border-4 border-t-cyan-500 rounded-full animate-spin"></div>
+                      </div>
+                      <h3 className="text-xl font-bold text-white">Verifying Identity...</h3>
+                      <p className="text-slate-400 mt-2 text-sm max-w-md mx-auto">Our AI agents are validating your documents against global databases. This usually takes less than 60 seconds.</p>
                   </div>
               ) : (
-                  <div className="space-y-8">
-                      {/* Progress Stepper */}
-                      <div className="flex items-center justify-between px-4">
+                  <div className="space-y-6">
+                      {/* Step Indicator */}
+                      <div className="flex items-center justify-between mb-8 px-4">
                           {[1, 2, 3, 4].map(step => (
-                              <div key={step} className="flex flex-col items-center relative z-10">
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${
-                                      kycStep >= step ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/30 scale-110' : 'bg-slate-800 text-slate-500 border border-slate-700'
-                                  }`}>
-                                      {step}
+                              <div key={step} className="flex flex-col items-center gap-2 relative z-10">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${step <= kycStep ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-500'}`}>
+                                      {step < kycStep ? <CheckCircle2 size={16} /> : step}
                                   </div>
-                                  <span className={`text-[10px] mt-2 font-medium ${kycStep >= step ? 'text-emerald-400' : 'text-slate-600'}`}>
-                                      {step === 1 ? 'Personal' : step === 2 ? 'Document' : step === 3 ? 'Biometric' : 'Review'}
+                                  <span className={`text-[10px] font-bold ${step <= kycStep ? 'text-cyan-400' : 'text-slate-600'}`}>
+                                      {step === 1 ? 'Info' : step === 2 ? 'Doc' : step === 3 ? 'Liveness' : 'Review'}
                                   </span>
                               </div>
                           ))}
-                          <div className="absolute left-0 w-full h-0.5 bg-slate-800 top-4 -z-0 mx-8">
-                              <div 
-                                className="h-full bg-emerald-500 transition-all duration-500" 
-                                style={{ width: `${((kycStep - 1) / 3) * 100}%` }}
-                              ></div>
-                          </div>
+                          {/* Progress Line */}
+                          <div className="absolute left-0 w-full h-0.5 bg-slate-800 top-4 -z-0"></div>
+                          <div className="absolute left-0 h-0.5 bg-cyan-600 top-4 -z-0 transition-all duration-500" style={{ width: `${((kycStep - 1) / 3) * 100}%` }}></div>
                       </div>
 
-                      <div className="bg-black/20 border border-slate-800 rounded-xl p-6 min-h-[300px]">
+                      {/* Step Content */}
+                      <div className="bg-black/20 rounded-xl p-6 border border-slate-800 min-h-[300px]">
                           {kycStep === 1 && (
-                              <div className="space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
+                              <div className="space-y-4 anim-enter-right">
                                   <h4 className="font-bold text-white mb-4">Personal Information</h4>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      <div>
-                                          <label className="text-xs text-slate-400 block mb-1">Full Name</label>
-                                          <input 
-                                            type="text" 
-                                            value={kycData.fullName}
-                                            onChange={e => setKycData({...kycData, fullName: e.target.value})}
-                                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none"
-                                            placeholder="John Doe"
-                                          />
-                                      </div>
-                                      <div>
-                                          <label className="text-xs text-slate-400 block mb-1">Date of Birth</label>
-                                          <input 
-                                            type="date" 
-                                            value={kycData.dob}
-                                            onChange={e => setKycData({...kycData, dob: e.target.value})}
-                                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none"
-                                          />
-                                      </div>
-                                      <div className="md:col-span-2">
-                                          <label className="text-xs text-slate-400 block mb-1">Residential Address</label>
-                                          <input 
-                                            type="text" 
-                                            value={kycData.address}
-                                            onChange={e => setKycData({...kycData, address: e.target.value})}
-                                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none"
-                                            placeholder="123 Cyber Avenue, Neo Tokyo"
-                                          />
-                                      </div>
+                                  <div className="space-y-3">
+                                      <input type="text" placeholder="Full Name (as per Passport)" className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-cyan-500 outline-none" value={kycData.fullName} onChange={(e) => setKycData({...kycData, fullName: e.target.value})} />
+                                      <input type="date" className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-cyan-500 outline-none" value={kycData.dob} onChange={(e) => setKycData({...kycData, dob: e.target.value})} />
+                                      <input type="text" placeholder="Residential Address" className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-cyan-500 outline-none" value={kycData.address} onChange={(e) => setKycData({...kycData, address: e.target.value})} />
                                   </div>
                               </div>
                           )}
 
                           {kycStep === 2 && (
-                              <div className="space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
-                                  <h4 className="font-bold text-white mb-4">Document Verification</h4>
-                                  
-                                  <div className="flex gap-4 mb-6">
-                                      {['passport', 'id_card', 'driver_license'].map(type => (
+                              <div className="space-y-4 anim-enter-right">
+                                  <h4 className="font-bold text-white mb-4">Document Upload</h4>
+                                  <div className="grid grid-cols-3 gap-3 mb-4">
+                                      {['passport', 'id_card', 'license'].map(type => (
                                           <button 
                                             key={type}
                                             onClick={() => setKycData({...kycData, docType: type})}
-                                            className={`flex-1 py-3 rounded-lg border text-xs font-bold transition-all ${
-                                                kycData.docType === type ? 'bg-emerald-900/30 border-emerald-500 text-emerald-400' : 'bg-slate-900 border-slate-700 text-slate-400'
-                                            }`}
+                                            className={`p-3 rounded-lg border flex flex-col items-center gap-2 transition-colors ${kycData.docType === type ? 'bg-cyan-900/20 border-cyan-500 text-cyan-400' : 'bg-slate-900 border-slate-700 text-slate-500'}`}
                                           >
-                                              {type === 'passport' ? 'Passport' : type === 'id_card' ? 'National ID' : 'Driver License'}
+                                              <FileText size={20} />
+                                              <span className="text-[10px] font-bold uppercase">{type.replace('_', ' ')}</span>
                                           </button>
                                       ))}
                                   </div>
-
-                                  <div 
-                                    className="border-2 border-dashed border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 hover:bg-slate-900/50 transition-all group"
-                                    onClick={simulateFileUpload}
-                                  >
-                                      <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                          <FileUp size={24} className="text-slate-400 group-hover:text-emerald-400" />
-                                      </div>
-                                      <span className="text-sm text-slate-300 font-medium">Click to Upload Document Front</span>
-                                      <span className="text-xs text-slate-500 mt-1">JPG, PNG or PDF (Max 5MB)</span>
-                                      
-                                      {kycUploadProgress > 0 && (
-                                          <div className="w-full max-w-xs mt-4 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                              <div 
-                                                className="h-full bg-emerald-500 transition-all duration-200"
-                                                style={{ width: `${kycUploadProgress}%` }}
-                                              ></div>
+                                  <div className="border-2 border-dashed border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center text-slate-500 hover:border-cyan-500/50 hover:bg-slate-900/50 transition-colors cursor-pointer" onClick={simulateFileUpload}>
+                                      {kycUploadProgress > 0 && kycUploadProgress < 100 ? (
+                                          <div className="w-full max-w-xs">
+                                              <div className="flex justify-between text-xs mb-2 text-cyan-400"><span>Uploading...</span><span>{kycUploadProgress}%</span></div>
+                                              <div className="h-2 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-cyan-500 transition-all duration-200" style={{ width: `${kycUploadProgress}%` }}></div></div>
                                           </div>
+                                      ) : kycUploadProgress === 100 ? (
+                                          <div className="text-green-400 flex flex-col items-center gap-2">
+                                              <CheckCircle2 size={32} />
+                                              <span className="font-bold">Upload Complete</span>
+                                          </div>
+                                      ) : (
+                                          <>
+                                              <Upload size={32} className="mb-2" />
+                                              <span className="text-sm font-bold">Click to Upload Document</span>
+                                              <span className="text-xs">JPG, PNG or PDF (Max 5MB)</span>
+                                          </>
                                       )}
-                                      {kycUploadProgress === 100 && <span className="text-xs text-emerald-400 font-bold mt-2">Upload Complete</span>}
                                   </div>
                               </div>
                           )}
 
                           {kycStep === 3 && (
-                              <div className="flex flex-col items-center justify-center h-full animate-in slide-in-from-right-4 fade-in duration-300 py-8">
-                                  {isCameraActive ? (
-                                      <div className="relative w-full max-w-xs aspect-square rounded-2xl overflow-hidden border-2 border-slate-700">
-                                          <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-                                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                              <div className="w-48 h-64 border-2 border-emerald-500/50 rounded-[50%]"></div>
+                              <div className="space-y-4 anim-enter-right">
+                                  <h4 className="font-bold text-white mb-2">Liveness Check</h4>
+                                  <div className="relative aspect-video bg-black rounded-xl overflow-hidden border border-slate-700">
+                                      {isCameraActive ? (
+                                          <video ref={videoRef} className="w-full h-full object-cover transform scale-x-[-1]" autoPlay playsInline muted />
+                                      ) : (
+                                          <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500">
+                                              {cameraError ? (
+                                                  <>
+                                                      <AlertCircle size={32} className="text-red-500 mb-2" />
+                                                      <span className="text-red-400 text-sm">{cameraError}</span>
+                                                  </>
+                                              ) : (
+                                                  <>
+                                                      <ScanFace size={48} className="mb-4 opacity-50" />
+                                                      <p className="text-sm">Camera permission required</p>
+                                                  </>
+                                              )}
                                           </div>
-                                          <button 
-                                            onClick={stopCamera}
-                                            className="absolute top-2 right-2 bg-black/50 text-white p-2 rounded-full"
-                                          >
-                                              <X size={16} />
-                                          </button>
-                                      </div>
-                                  ) : (
-                                      <>
-                                          <div className="relative w-40 h-40 mb-6">
-                                              <div className="absolute inset-0 border-4 border-slate-700 rounded-full"></div>
-                                              <div className="absolute inset-0 border-4 border-t-emerald-500 rounded-full animate-spin"></div>
-                                              <div className="absolute inset-0 flex items-center justify-center">
-                                                  <ScanFace size={64} className="text-emerald-400 animate-pulse" />
+                                      )}
+                                      
+                                      {isCameraActive && (
+                                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                              <div className="w-48 h-64 border-2 border-cyan-500/50 rounded-[50%] relative">
+                                                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 text-cyan-500 text-xs font-bold bg-black/50 px-2 py-1 rounded">Position Face Here</div>
                                               </div>
                                           </div>
-                                          <h4 className="text-lg font-bold text-white mb-2">Liveness Check</h4>
-                                          <p className="text-sm text-slate-400 text-center max-w-xs mb-6">Please look at the camera and slowly turn your head to the left, then right.</p>
-                                          {cameraError && <p className="text-xs text-red-400 mb-4">{cameraError}</p>}
-                                          <button 
-                                            onClick={startCamera}
-                                            className="px-6 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs font-bold hover:bg-slate-700 flex items-center gap-2"
-                                          >
-                                              <Camera size={14} /> Start Camera
-                                          </button>
-                                      </>
+                                      )}
+                                  </div>
+                                  
+                                  {!isCameraActive ? (
+                                      <button onClick={startCamera} className="w-full py-3 bg-slate-800 text-white rounded-lg font-bold hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
+                                          <Camera size={18} /> Enable Camera
+                                      </button>
+                                  ) : (
+                                      <div className="text-center text-xs text-green-400 animate-pulse font-mono">
+                                          Analyzing biometrics...
+                                      </div>
                                   )}
                               </div>
                           )}
 
                           {kycStep === 4 && (
-                              <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                                  <h4 className="font-bold text-white mb-2">Review Information</h4>
-                                  <div className="bg-slate-900 rounded-xl p-4 border border-slate-800 space-y-3">
+                              <div className="space-y-4 anim-enter-right">
+                                  <h4 className="font-bold text-white mb-4">Review Information</h4>
+                                  <div className="space-y-2 text-sm">
                                       <div className="flex justify-between border-b border-slate-800 pb-2">
-                                          <span className="text-xs text-slate-500">Name</span>
-                                          <span className="text-sm text-white">{kycData.fullName || 'Not provided'}</span>
+                                          <span className="text-slate-500">Full Name</span>
+                                          <span className="text-white">{kycData.fullName || 'Not provided'}</span>
                                       </div>
                                       <div className="flex justify-between border-b border-slate-800 pb-2">
-                                          <span className="text-xs text-slate-500">Document</span>
-                                          <span className="text-sm text-white capitalize">{kycData.docType.replace('_', ' ')}</span>
+                                          <span className="text-slate-500">Date of Birth</span>
+                                          <span className="text-white">{kycData.dob || 'Not provided'}</span>
                                       </div>
-                                      <div className="flex justify-between pb-2">
-                                          <span className="text-xs text-slate-500">Biometrics</span>
-                                          <span className="text-sm text-emerald-400 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> Captured</span>
+                                      <div className="flex justify-between border-b border-slate-800 pb-2">
+                                          <span className="text-slate-500">Address</span>
+                                          <span className="text-white truncate max-w-[200px]">{kycData.address || 'Not provided'}</span>
+                                      </div>
+                                      <div className="flex justify-between border-b border-slate-800 pb-2">
+                                          <span className="text-slate-500">Document</span>
+                                          <span className="text-green-400 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> Uploaded</span>
+                                      </div>
+                                      <div className="flex justify-between border-b border-slate-800 pb-2">
+                                          <span className="text-slate-500">Liveness</span>
+                                          <span className="text-green-400 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> Verified</span>
                                       </div>
                                   </div>
-                                  <div className="flex items-start gap-3 p-3 bg-emerald-900/10 border border-emerald-500/20 rounded-lg">
-                                      <Shield size={16} className="text-emerald-500 shrink-0 mt-0.5" />
-                                      <p className="text-xs text-emerald-200/80">
-                                          By submitting, you agree to the processing of your personal data for identity verification purposes in accordance with global banking regulations.
-                                      </p>
+                                  <div className="bg-amber-900/20 p-3 rounded-lg border border-amber-500/30 text-xs text-amber-200 mt-4">
+                                      By submitting, you consent to the processing of your biometric data for identity verification purposes in accordance with GDPR and local regulations.
                                   </div>
                               </div>
                           )}
                       </div>
 
-                      <div className="flex justify-end pt-4">
-                          {kycStep < 4 ? (
-                              <button 
-                                onClick={handleKycNext}
-                                className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20 transition-all active:scale-95 flex items-center gap-2"
-                              >
-                                  Next Step <ArrowRight size={18} />
-                              </button>
-                          ) : (
-                              <button 
-                                onClick={handleKycSubmit}
-                                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20 transition-all active:scale-95 flex items-center gap-2"
-                              >
-                                  <Upload size={18} /> Submit for Verification
+                      {/* Navigation Buttons */}
+                      <div className="flex gap-3">
+                          {kycStep > 1 && (
+                              <button onClick={() => setKycStep(prev => prev - 1)} className="px-6 py-3 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors">
+                                  Back
                               </button>
                           )}
+                          <button 
+                             onClick={kycStep === 4 ? handleKycSubmit : handleKycNext}
+                             className="flex-1 py-3 bg-cyan-600 text-white font-bold rounded-xl hover:bg-cyan-500 transition-colors shadow-lg shadow-cyan-500/20"
+                          >
+                              {kycStep === 4 ? 'Submit Verification' : 'Continue'}
+                          </button>
                       </div>
                   </div>
               )}
@@ -884,184 +770,75 @@ export const BankServicesView: React.FC<BankServicesViewProps> = ({ onNavigate }
       )}
 
       {activeTab === 'directory' && (
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 anim-enter-right">
-              <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-400 border border-blue-500/20">
-                      <BookOpen size={24} />
-                  </div>
-                  <div>
-                      <h3 className="text-lg font-bold text-white">Global Bank Directory</h3>
-                      <p className="text-xs text-slate-400">Reference list of supported banking entities</p>
+          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-white">Global Bank Directory</h3>
+                  <div className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 flex items-center gap-2">
+                      <Search size={14} className="text-slate-500" />
+                      <input 
+                         type="text" 
+                         placeholder="Filter..." 
+                         className="bg-transparent text-xs text-white outline-none w-24"
+                         onChange={(e) => setFilterCountry(e.target.value || 'ALL')}
+                      />
                   </div>
               </div>
 
-              <div className="mb-6">
-                  <label className="text-xs font-bold text-slate-400 mb-2 block">Filter by Country</label>
-                  <select
-                      className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
-                      value={filterCountry}
-                      onChange={(e) => setFilterCountry(e.target.value)}
-                  >
-                      <option value="ALL">All Countries</option>
-                      {Array.from(new Set(bankList.map(b => b.name))).sort().map(countryName => (
-                          <option key={countryName} value={countryName}>{countryName}</option>
-                      ))}
-                  </select>
-              </div>
-
-              <div className="space-y-3">
-                  {filteredBanks.map((bank) => (
-                      <div key={bank.code} className="flex items-center justify-between p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-600 transition-colors">
-                          <div className="flex items-center gap-4">
+              <div className="h-96 overflow-y-auto custom-scrollbar pr-2 space-y-2">
+                  {filteredBanks.map((bank, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-black/20 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors group">
+                          <div className="flex items-center gap-3">
                               <div className="text-2xl">{bank.flag}</div>
                               <div>
-                                  <div className="text-sm font-bold text-white">{bank.name}</div>
+                                  <div className="text-sm font-bold text-white group-hover:text-cyan-400 transition-colors">{bank.name}</div>
                                   <div className="text-xs text-slate-500">{bank.desc}</div>
                               </div>
                           </div>
                           <div className="text-right">
-                              <div className="text-sm font-mono font-bold text-blue-400">{bank.swift}</div>
-                              <div className="text-xs text-slate-500 font-mono">{bank.currency}</div>
+                              <div className="text-xs font-mono font-bold text-indigo-400">{bank.currency}</div>
+                              <div className="text-[10px] text-slate-600">{bank.swift.split(' ')[0]}</div>
                           </div>
                       </div>
                   ))}
-                  {filteredBanks.length === 0 && (
-                      <div className="text-center py-8 text-slate-500 text-sm">No banks found for this filter.</div>
-                  )}
               </div>
           </div>
       )}
 
       {activeTab === 'admin_registry' && (
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 anim-enter-right">
-             <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-400 border border-amber-500/20">
-                      <Database size={24} />
+          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                  <Database size={20} className="text-amber-500" /> Bank Entity Registry (Admin)
+              </h3>
+              
+              <div className="bg-black/30 border border-slate-800 rounded-xl p-4 mb-6">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">Register New Entity</h4>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                      <input type="text" placeholder="Bank Name" className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white outline-none" value={newBank.name} onChange={e => setNewBank({...newBank, name: e.target.value})} />
+                      <input type="text" placeholder="Country Code (e.g. US)" className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white outline-none" value={newBank.code} onChange={e => setNewBank({...newBank, code: e.target.value})} />
+                      <input type="text" placeholder="Currency (e.g. USD)" className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white outline-none" value={newBank.currency} onChange={e => setNewBank({...newBank, currency: e.target.value})} />
+                      <input type="text" placeholder="SWIFT Prefix" className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white outline-none" value={newBank.swift} onChange={e => setNewBank({...newBank, swift: e.target.value})} />
                   </div>
-                  <div>
-                      <h3 className="text-lg font-bold text-white">Bank Registry</h3>
-                      <p className="text-xs text-slate-400">Add & Manage Global Banking Entities</p>
-                  </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  <div className="space-y-4">
-                      <div className="flex gap-3">
-                          <div className="space-y-2 flex-1">
-                              <label className="text-xs font-bold text-slate-400">Bank Name</label>
-                              <input 
-                                 type="text" 
-                                 className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none"
-                                 value={newBank.name}
-                                 onChange={e => setNewBank({...newBank, name: e.target.value})}
-                                 placeholder="e.g. Bank of Mars"
-                              />
-                          </div>
-                          <div className="space-y-2 w-20">
-                              <label className="text-xs font-bold text-slate-400">Flag</label>
-                              <input 
-                                 type="text" 
-                                 className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none text-center"
-                                 value={newBank.flag}
-                                 onChange={e => setNewBank({...newBank, flag: e.target.value})}
-                                 placeholder="🏳️"
-                              />
-                          </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                              <label className="text-xs font-bold text-slate-400">Country Code</label>
-                              <input 
-                                type="text" 
-                                className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none font-mono uppercase"
-                                value={newBank.code}
-                                onChange={e => setNewBank({...newBank, code: e.target.value})}
-                                placeholder="e.g. MA"
-                                maxLength={2}
-                              />
-                          </div>
-                          <div className="space-y-2">
-                              <label className="text-xs font-bold text-slate-400">Currency</label>
-                              <input 
-                                type="text" 
-                                className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none font-mono uppercase"
-                                value={newBank.currency}
-                                onChange={e => setNewBank({...newBank, currency: e.target.value})}
-                                placeholder="e.g. MRD"
-                                maxLength={3}
-                              />
-                          </div>
-                      </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                              <label className="text-xs font-bold text-slate-400">SWIFT Prefix</label>
-                              <input 
-                                 type="text" 
-                                 className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none font-mono uppercase"
-                                 value={newBank.swift}
-                                 onChange={e => setNewBank({...newBank, swift: e.target.value})}
-                                 placeholder="e.g. TKGB MA"
-                              />
-                          </div>
-                          <div className="space-y-2">
-                              <label className="text-xs font-bold text-slate-400">Format</label>
-                              <input 
-                                 type="text" 
-                                 className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none"
-                                 value={newBank.format}
-                                 onChange={e => setNewBank({...newBank, format: e.target.value})}
-                                 placeholder="e.g. IBAN (XX)"
-                              />
-                          </div>
-                      </div>
-
-                      <div className="space-y-2">
-                          <label className="text-xs font-bold text-slate-400">Network / Description</label>
-                          <input 
-                             type="text" 
-                             className="w-full bg-black/40 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:border-amber-500 focus:outline-none"
-                             value={newBank.desc}
-                             onChange={e => setNewBank({...newBank, desc: e.target.value})}
-                             placeholder="e.g. Interplanetary Transfer Protocol"
-                          />
-                      </div>
-                  </div>
-              </div>
-
-              <div className="flex justify-end mb-8 pb-8 border-b border-slate-800">
-                  <button 
-                    onClick={handleRegisterBank}
-                    className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all active:scale-95"
-                  >
-                      <Save size={18} /> Register Entity
+                  <button onClick={handleRegisterBank} className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+                      <Plus size={14} /> Add to Ledger
                   </button>
               </div>
 
-              <h4 className="text-xs font-bold text-slate-500 uppercase mb-4">Registered Banking Entities</h4>
-              <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
-                  {bankList.map((bank) => (
-                      <div key={bank.code} className="flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-600 transition-colors">
-                          <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-lg shadow-sm">
-                                  {bank.flag}
+              <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Registered Entities</h4>
+                  <div className="h-64 overflow-y-auto custom-scrollbar pr-2 space-y-2">
+                      {bankList.map((bank, idx) => (
+                          <div key={idx} className="flex justify-between items-center p-2 bg-black/20 rounded border border-slate-800/50">
+                              <div className="flex items-center gap-2">
+                                  <span className="text-lg">{bank.flag}</span>
+                                  <span className="text-xs font-bold text-slate-300">{bank.name}</span>
+                                  <span className="text-[10px] bg-slate-800 px-1 rounded text-slate-500">{bank.code}</span>
                               </div>
-                              <div>
-                                  <div className="text-sm font-bold text-white">{bank.name}</div>
-                                  <div className="text-[10px] text-slate-500 font-mono">{bank.code} • {bank.currency} • {bank.swift}</div>
-                              </div>
+                              <button onClick={() => handleDeleteBank(bank.code)} className="text-slate-600 hover:text-red-400 transition-colors">
+                                  <Trash2 size={14} />
+                              </button>
                           </div>
-                          <button 
-                            onClick={() => handleDeleteBank(bank.code)}
-                            className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
-                          >
-                              <Trash2 size={16} />
-                          </button>
-                      </div>
-                  ))}
+                      ))}
+                  </div>
               </div>
           </div>
       )}
@@ -1069,29 +846,16 @@ export const BankServicesView: React.FC<BankServicesViewProps> = ({ onNavigate }
   );
 };
 
-const TabButton: React.FC<{ active: boolean; onClick: () => void; label: string; icon: React.ReactNode }> = React.memo(({ active, onClick, label, icon }) => (
-    <button 
-        onClick={onClick}
-        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${active ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
-    >
-        {icon} {label}
-    </button>
-));
-
-const AccountCard: React.FC<{ region: string; iban: string; currency: string; balance: string; bank: string }> = React.memo(({ region, iban, currency, balance, bank }) => (
-    <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between hover:border-cyan-500/30 transition-colors group">
-        <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 border border-slate-700 group-hover:bg-cyan-900/20 group-hover:text-cyan-400 group-hover:border-cyan-500/30 transition-colors">
-                {region}
-            </div>
-            <div>
-                <div className="font-bold text-white text-sm">{bank}</div>
-                <div className="text-xs text-slate-500 font-mono">{iban}</div>
-            </div>
-        </div>
-        <div className="text-right">
-            <div className="font-mono font-bold text-white">{balance}</div>
-            <div className="text-[10px] text-slate-500">{currency}</div>
-        </div>
-    </div>
-));
+const TabButton: React.FC<{ active: boolean; onClick: () => void; label: string; icon: React.ReactNode }> = ({ active, onClick, label, icon }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+      active 
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
+        : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+    }`}
+  >
+    {icon}
+    {label}
+  </button>
+);

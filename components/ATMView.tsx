@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { QrCode, Copy, CheckCircle, Camera, Receipt, ArrowRight, ShieldCheck, AlertTriangle, Calculator, RefreshCw, X, Banknote, Timer, MapPin, Smartphone, Scan } from 'lucide-react';
+import { QrCode, Copy, CheckCircle, Camera, Receipt, ArrowRight, ShieldCheck, AlertTriangle, Calculator, RefreshCw, X, Banknote, Timer, MapPin, Smartphone, Scan, CircleDollarSign } from 'lucide-react';
 import { WalletState } from '../types';
 
 interface ATMViewProps {
@@ -51,7 +51,7 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
 
     if (!isSecure) {
       setHasPermission(false);
-      setErrorMsg("HTTPS connection required for biometric scan.");
+      setErrorMsg("HTTPS connection required for security scan.");
       return;
     }
 
@@ -132,18 +132,18 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
   const handleProcessTransaction = () => {
     setScanStep('processing');
     
-    // Simulate Rust Core Processing (Super Fast)
+    // Simulate Connection to Real ATM Infrastructure
     setTimeout(() => {
       setTxData({
-        id: `TX-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-        recipient: 'Global Vault ATM #229',
-        location: 'Tokyo, Minato-ku',
-        amount: '¥ 50,000',
+        id: `ATM-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        recipient: 'CASH WITHDRAWAL',
+        location: 'Detected ATM (Seven Bank)',
+        amount: '¥ 100,000',
         fee: '¥ 0',
         timestamp: new Date().toLocaleString()
       });
       setScanStep('success');
-    }, 800); // Fast processing
+    }, 2500); // Realistic processing delay
   };
 
   const resetScan = () => {
@@ -170,10 +170,10 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
               <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-4 ring-2 ring-green-500/50 shadow-[0_0_30px_rgba(34,197,94,0.4)] animate-pulse">
                  <CheckCircle size={40} className="text-green-500" />
               </div>
-              <h2 className="text-2xl font-bold text-white tracking-wide">Deposit Confirmed</h2>
+              <h2 className="text-2xl font-bold text-white tracking-wide">Dispense Authorized</h2>
               <div className="flex items-center gap-2 mt-2">
                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                 <p className="text-xs text-green-400 font-mono">BLOCKCHAIN SYNCED</p>
+                 <p className="text-xs text-green-400 font-mono">ATM HARDWARE UNLOCKED</p>
               </div>
            </div>
 
@@ -186,11 +186,15 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
                  <span className="text-indigo-400 font-bold">{txData.id}</span>
               </div>
               <div className="flex justify-between items-center">
-                 <span className="text-slate-500">Destination</span>
+                 <span className="text-slate-500">Action</span>
                  <span className="text-white text-xs">{txData.recipient}</span>
               </div>
               <div className="flex justify-between items-center">
-                 <span className="text-slate-500">Amount</span>
+                 <span className="text-slate-500">Location</span>
+                 <span className="text-white text-xs">{txData.location}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                 <span className="text-slate-500">Dispensed</span>
                  <span className="text-2xl font-bold text-white tracking-tighter">{txData.amount}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
@@ -199,7 +203,7 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
               </div>
               <div className="flex justify-between items-center pt-3 border-t border-slate-800 text-[10px] text-slate-500">
                  <span>{txData.timestamp}</span>
-                 <span className="flex items-center gap-1 text-indigo-500"><ShieldCheck size={12} /> ΩMAX Verified</span>
+                 <span className="flex items-center gap-1 text-indigo-500"><ShieldCheck size={12} /> Real Cash Out</span>
               </div>
            </div>
 
@@ -209,10 +213,7 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
                 onClick={resetScan}
                 className="w-full py-4 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 active:scale-95"
               >
-                 <ArrowRight size={20} /> Perform Another Action
-              </button>
-              <button className="w-full py-4 bg-slate-900 text-slate-400 font-bold rounded-xl hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center gap-2 border border-slate-800">
-                 <Receipt size={20} /> Save Digital Receipt
+                 <ArrowRight size={20} /> Close & Secure
               </button>
            </div>
         </div>
@@ -227,9 +228,12 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
         <div className="relative">
             <div className="w-24 h-24 border-4 border-slate-800 border-t-indigo-500 rounded-full animate-spin"></div>
             <div className="w-16 h-16 border-4 border-slate-800 border-b-purple-500 rounded-full animate-spin absolute top-4 left-4 direction-reverse"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+                <Banknote size={32} className="text-green-500 animate-pulse" />
+            </div>
         </div>
-        <div className="font-mono text-indigo-400 animate-pulse mt-8 text-lg font-bold tracking-widest">PROCESSING TRANSACTION</div>
-        <div className="text-xs text-slate-500 mt-2 font-mono">Syncing with Global Vault (Rust Core)</div>
+        <div className="font-mono text-indigo-400 animate-pulse mt-8 text-lg font-bold tracking-widest">CONNECTING TO ATM...</div>
+        <div className="text-xs text-slate-500 mt-2 font-mono">Authorizing Cash Dispense via NFC/QR</div>
       </div>
     );
   }
@@ -242,8 +246,8 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
                   <button onClick={() => setScanStep('camera')} className="mb-6 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
                       <X size={20} /> Cancel
                   </button>
-                  <h2 className="text-2xl font-bold text-white mb-2">Manual Entry</h2>
-                  <p className="text-sm text-slate-400 mb-8">Enter the 8-digit token ID from the ATM screen.</p>
+                  <h2 className="text-2xl font-bold text-white mb-2">Manual ATM Auth</h2>
+                  <p className="text-sm text-slate-400 mb-8">Enter the secure 8-digit token ID displayed on the ATM screen.</p>
 
                   <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 mb-8 shadow-inner">
                       <input 
@@ -288,13 +292,13 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
           onClick={() => setMode('scan')}
           className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${mode === 'scan' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/20' : 'text-slate-500 hover:text-slate-300'}`}
         >
-          <Camera size={18} /> SCAN
+          <Camera size={18} /> SCAN ATM
         </button>
         <button 
           onClick={() => { setMode('withdraw'); setWithdrawStep('input'); }}
           className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${mode === 'withdraw' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/20' : 'text-slate-500 hover:text-slate-300'}`}
         >
-          <Banknote size={18} /> ATM CASH OUT
+          <CircleDollarSign size={18} /> PRE-STAGED
         </button>
       </div>
 
@@ -307,7 +311,7 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
                       <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                       
                       {/* Godmode Overlay */}
-                      <div className="absolute inset-0 border-[2px] border-indigo-500/10 z-10 pointer-events-none"></div>
+                      <div className="absolute inset-0 border-[4px] border-indigo-500/10 z-10 pointer-events-none"></div>
                       
                       {/* Scanning Reticle */}
                       <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
@@ -323,7 +327,7 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
                             
                             <div className="absolute bottom-4 w-full text-center">
                                 <span className="bg-black/60 text-indigo-400 text-[10px] font-mono px-3 py-1 rounded-full border border-indigo-500/30 backdrop-blur-md">
-                                    SEARCHING FOR TOKEN...
+                                    SCANNING ATM QR CODE...
                                 </span>
                             </div>
                          </div>
@@ -392,8 +396,8 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
                 {withdrawStep === 'input' ? (
                     <div className="w-full max-w-xs z-10 space-y-6">
                         <div className="text-center">
-                            <h3 className="text-2xl font-bold text-white mb-2">Cardless Withdrawal</h3>
-                            <p className="text-slate-400 text-xs">Enter amount to generate secure QR</p>
+                            <h3 className="text-2xl font-bold text-white mb-2">Pre-Stage Withdrawal</h3>
+                            <p className="text-slate-400 text-xs">Enter amount to generate secure QR for NFC ATM</p>
                         </div>
                         
                         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative">
@@ -458,10 +462,10 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
                                     <ShieldCheck size={10} className="text-green-500" /> KYBER-1024
                                 </div>
                                 <div className="bg-slate-800/50 p-2 rounded flex items-center gap-2">
-                                    <Smartphone size={10} className="text-indigo-500" /> TEE AUTH
+                                    <Smartphone size={10} className="text-indigo-500" /> NFC READY
                                 </div>
                                 <div className="bg-slate-800/50 p-2 rounded flex items-center gap-2 col-span-2">
-                                    <MapPin size={10} className="text-amber-500" /> GeoHash: tk7-35.68-139.76
+                                    <MapPin size={10} className="text-amber-500" /> ATM GeoHash: Lock
                                 </div>
                             </div>
 

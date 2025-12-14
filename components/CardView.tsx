@@ -26,9 +26,12 @@ export const CardView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-20 animate-in fade-in duration-500">
-      <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-        <CreditCard className="text-indigo-500" /> Virtual Card Control
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <CreditCard className="text-indigo-500" /> Virtual Card Control
+          </h2>
+          {isFrozen && <span className="bg-red-500 text-white text-[10px] px-2 py-1 rounded font-bold animate-pulse">DISABLED</span>}
+      </div>
 
       {/* Card Visual */}
       <div className={`relative w-full aspect-[1.586/1] rounded-2xl p-6 flex flex-col justify-between transition-all duration-500 overflow-hidden shadow-2xl group ${isFrozen ? 'grayscale opacity-75' : ''}`}>
@@ -158,7 +161,7 @@ export const CardView: React.FC = () => {
           <div className="bg-black/20 p-4 rounded-xl border border-slate-800">
               <div className="flex justify-between items-end mb-4">
                   <div className="flex flex-col">
-                      <span className="text-xs font-bold text-slate-400 mb-1">Spending Limit</span>
+                      <span className="text-xs font-bold text-slate-400 mb-1">Global Spending Limit</span>
                       <div className="flex items-center gap-2">
                           <span className={`font-mono font-bold text-lg transition-all ${limit >= 100 ? "text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]" : limit === 0 ? "text-red-400" : "text-indigo-400"}`}>
                               {limit >= 100 ? "∞ GODMODE" : limit === 0 ? "🚫 BLOCKED" : `¥ ${(limit * 100000).toLocaleString()}`}
@@ -185,6 +188,12 @@ export const CardView: React.FC = () => {
                   <span>5M</span>
                   <span>UNLIMITED</span>
               </div>
+              {limit > 80 && (
+                  <div className="mt-3 flex items-center gap-2 text-[10px] text-amber-500 bg-amber-900/10 p-2 rounded">
+                      <AlertTriangle size={12} />
+                      <span>Warning: High limit enabled. Transactions over ¥50M will require biometric auth.</span>
+                  </div>
+              )}
           </div>
       </div>
 

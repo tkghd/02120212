@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Send, Building2, Search, ChevronRight, AlertCircle, ArrowRight, CheckCircle2, ChevronDown, RefreshCw, Wallet, ArrowLeft, CreditCard, History, User, Pencil, Landmark, ShieldCheck, Smartphone, Zap, Mail, QrCode, FileText, Fingerprint, Lock, Shield, Scan, Bot, Sparkles, Siren, Mic, Network, Server, Globe, Wifi } from 'lucide-react';
 import { WalletState, OwnerAccount } from '../types';
+import { BankGateway } from '../services/BankGateway';
 
 interface TransferViewProps {
   wallet: WalletState;
@@ -35,7 +36,18 @@ const MAJOR_BANKS = [
 export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccounts, apiBase }) => {
   const [step, setStep] = useState<TransferStep>('method_select');
   const [method, setMethod] = useState<TransferMethod>('bank');
-  const [selectedSource, setSelectedSource] = useState<OwnerAccount>(ownerAccounts[0]);
+  
+  // Combine all assets into a single list for selection
+  const allSources = [
+      ...ownerAccounts.map(acc => ({ id: acc.id, name: `${acc.bankName} ${acc.branchName}`, balance: acc.balance, currency: acc.currency, type: 'fiat' })),
+      { id: 'btc_wallet', name: 'Bitcoin Cold Vault', balance: wallet.btc, currency: 'BTC', type: 'crypto' },
+      { id: 'tkg_wallet', name: 'TKG Treasury', balance: wallet.tk_coin, currency: 'TKG', type: 'crypto' },
+      { id: 'eth_wallet', name: 'Ethereum Wallet', balance: wallet.eth, currency: 'ETH', type: 'crypto' }
+  ];
+
+  const [selectedSourceId, setSelectedSourceId] = useState<string>(allSources[0].id);
+  const selectedSource = allSources.find(s => s.id === selectedSourceId) || allSources[0];
+
   const [selectedBank, setSelectedBank] = useState<any>(null);
   
   // Account Details (Bank)
@@ -51,23 +63,19 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   
   // Amount & Sender
   const [amount, setAmount] = useState('');
-  const [senderName, setSenderName] = useState(selectedSource.accountName);
+  const [senderName, setSenderName] = useState('TK GLOBAL ADMIN');
   const [isEditingSender, setIsEditingSender] = useState(false);
   
   // Process
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStage, setProcessingStage] = useState('');
   const [txId, setTxId] = useState('');
+  const [gatewayRoute, setGatewayRoute] = useState('');
 
   // Emergency Mode State
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [voiceListening, setVoiceListening] = useState(false);
   const [emergencyTarget, setEmergencyTarget] = useState('');
-
-  // Update sender name default when source changes
-  useEffect(() => {
-    setSenderName(selectedSource.accountName);
-  }, [selectedSource]);
 
   const handleMethodSelect = (m: TransferMethod) => {
       setMethod(m);
@@ -116,60 +124,39 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
     setRecipientId('');
     setSelectedBank(null);
     setTxId('');
+    setGatewayRoute('');
   };
 
   const handleTransfer = async () => {
     setStep('processing_auth');
     setIsProcessing(true);
     
-    setProcessingStage('Handshaking with API...');
+    setProcessingStage('Gateway Handshake...');
     
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        // USE UNIFIED BANK GATEWAY
+        const result = await BankGateway.processTransfer({
+            from: selectedSource.id,
+            to: method === 'bank' ? (selectedBank?.name || manualBankName) : recipientId,
+            amount: parseInt(amount),
+            currency: selectedSource.currency
+        });
 
-        let response;
-        try {
-            response = await fetch(`${apiBase}/api/transfer`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    from: selectedSource.id,
-                    to: method === 'bank' ? (selectedBank?.name || manualBankName) : recipientId,
-                    amount: parseInt(amount),
-                    currency: 'JPY'
-                }),
-                signal: controller.signal
-            });
-        } catch (e) {
-            throw new Error("Network error");
-        } finally {
-            clearTimeout(timeoutId);
-        }
-
-        const data = await response.json();
-
-        setProcessingStage('Finalizing Instant Settlement...');
+        setProcessingStage('Finalizing Production Settlement...');
         await new Promise(resolve => setTimeout(resolve, 600));
 
-        if (response.ok) {
-            setTxId(data.txId);
+        if (result.success) {
+            setTxId(result.txId);
+            setGatewayRoute(result.route);
             setIsProcessing(false);
             setStep('complete');
         } else {
-            // Fallback for demo if API returns error
-            throw new Error(data.error);
+            throw new Error(result.message);
         }
     } catch (err) {
-        console.warn("API Transfer failed, using simulation mode.", err);
-        setProcessingStage('Switching to Offline Settlement...');
-        
-        // Simulate Success for Demo
-        setTimeout(() => {
-             setTxId("OFFLINE-TX-" + Date.now());
-             setIsProcessing(false);
-             setStep('complete');
-        }, 1000);
+        console.warn("Transfer interrupt:", err);
+        setProcessingStage('Gateway Error - Reverting...');
+        setTimeout(() => setIsProcessing(false), 1000);
     }
   };
 
@@ -223,7 +210,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   // --- STEP: Processing Auth (3-Factor) ---
   if (step === 'processing_auth') {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-8 animate-in zoom-in-95 duration-300">
+        <div key="processing" className="h-full flex flex-col items-center justify-center p-8 anim-scale-up">
             <div className="relative mb-12">
                 <div className="w-32 h-32 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-spin"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -231,7 +218,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                 </div>
             </div>
             
-            <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">AUTHENTICATING</h3>
+            <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">GATEWAY SYNCING</h3>
             <p className="text-indigo-400 font-mono mb-8">{processingStage}</p>
 
             <div className="w-full max-w-sm space-y-4">
@@ -254,31 +241,29 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                         <Server size={16} className="text-amber-400" />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm">Gateway Response</span>
-                        <span className="text-[10px] text-slate-500 font-mono">200 OK (0.02s)</span>
+                        <span className="text-sm">Gateway Route</span>
+                        <span className="text-[10px] text-slate-500 font-mono">OPTIMIZED PATH FOUND</span>
                     </div>
-                    <div className="ml-auto text-green-500 text-xs font-bold">PASSED</div>
+                    <div className="ml-auto text-green-500 text-xs font-bold">LOCKED</div>
                 </div>
             </div>
         </div>
       );
   }
 
-  // --- STEP 1: Method Selection ---
+  // --- STEP 1: Method Selection (Omitted for brevity, assumed unchanged layout) ---
   if (step === 'method_select') {
     return (
-      <div className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
-        {/* Gateway Status Bar */}
+      <div key="method" className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
         <div className="flex gap-4 overflow-x-auto pb-4 mb-4 border-b border-slate-800">
-            <GatewayStatus label="Zengin" status="online" ping="4ms" />
-            <GatewayStatus label="PayPay API" status="online" ping="12ms" />
-            <GatewayStatus label="Cotra Hub" status="online" ping="8ms" />
-            <GatewayStatus label="SWIFT gpi" status="online" ping="140ms" />
+            <GatewayStatus label="Unified Gateway" status="online" ping="2ms" />
+            <GatewayStatus label="External Banks" status="online" ping="45ms" />
+            <GatewayStatus label="Crypto Core" status="online" ping="1ms" />
         </div>
 
         {renderHeader('送金方法の選択')}
         
-        {/* Source Selector */}
+        {/* Source Selector - NOW SUPPORTS ALL ASSETS */}
         <div className="mb-8 bg-[#0f0f18] border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
             <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
             <div className="absolute right-4 top-4">
@@ -287,17 +272,17 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                 </span>
             </div>
             <label className="text-xs font-bold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
-               <Wallet size={14} className="text-indigo-500" /> 出金口座 (Source)
+               <Wallet size={14} className="text-indigo-500" /> 出金口座 / 資産 (Source)
             </label>
             <div className="relative group">
                 <select 
                     className="w-full bg-[#1a1a24] border border-slate-700 rounded-xl py-4 px-4 pr-10 text-white appearance-none focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all cursor-pointer hover:bg-[#20202e]"
-                    value={selectedSource.id}
-                    onChange={(e) => setSelectedSource(ownerAccounts.find(a => a.id === e.target.value) || ownerAccounts[0])}
+                    value={selectedSourceId}
+                    onChange={(e) => setSelectedSourceId(e.target.value)}
                 >
-                    {ownerAccounts.map(acc => (
+                    {allSources.map(acc => (
                         <option key={acc.id} value={acc.id}>
-                            {acc.bankName} {acc.branchName} — {acc.currency === 'JPY' ? '¥' : '$'}{acc.balance}
+                            {acc.name} — {acc.currency === 'JPY' ? '¥' : acc.currency === 'USD' ? '$' : ''}{acc.balance} {acc.type === 'crypto' ? acc.currency : ''}
                         </option>
                     ))}
                 </select>
@@ -305,7 +290,9 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
             </div>
             <div className="mt-3 flex justify-between px-1 items-center">
                <span className="text-[10px] text-slate-500 font-mono">AVAILABLE BALANCE</span>
-               <span className="text-sm font-mono font-bold text-indigo-400 tracking-wide">¥ {selectedSource.balance}</span>
+               <span className="text-sm font-mono font-bold text-indigo-400 tracking-wide">
+                   {selectedSource.currency} {selectedSource.balance}
+               </span>
             </div>
         </div>
 
@@ -409,7 +396,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   // --- STEP: Bank Selection ---
   if (step === 'bank_select') {
     return (
-      <div className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
+      <div key="bank_select" className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
         {renderHeader('金融機関の選択')}
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8">
@@ -460,7 +447,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   // --- STEP: Account Input (Adaptive) ---
   if (step === 'account_input') {
       return (
-        <div className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
+        <div key="account_input" className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
           {renderHeader(method === 'bank' ? '口座情報の入力' : method === 'paypay' ? 'PayPay ID/電話番号' : 'ことら送金先の指定')}
           
           <div className="bg-[#0f0f18] border border-slate-800 rounded-2xl p-6 space-y-6">
@@ -588,7 +575,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   // --- STEP: Amount Input ---
   if (step === 'amount_input') {
       return (
-        <div className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
+        <div key="amount_input" className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
           {renderHeader('金額の入力')}
 
           <div className="bg-[#0f0f18] border border-slate-800 rounded-2xl p-6 space-y-6">
@@ -598,19 +585,19 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                     <Bot size={12} /> AI RATE ANALYSIS: BEST ROUTE [GODMODE]
                  </div>
 
-                 <label className="text-xs font-bold text-slate-500 mb-2 block">送金金額 (円)</label>
+                 <label className="text-xs font-bold text-slate-500 mb-2 block">送金金額 ({selectedSource.currency})</label>
                  <div className="flex items-end justify-center gap-2">
-                    <span className="text-4xl text-slate-400 mb-2">¥</span>
+                    <span className="text-4xl text-slate-400 mb-2">{selectedSource.currency === 'JPY' ? '¥' : selectedSource.currency === 'USD' ? '$' : selectedSource.currency}</span>
                     <input 
                        type="tel"
                        value={amount}
-                       onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
-                       placeholder="金額を入力（円）"
+                       onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                       placeholder="0"
                        className="bg-transparent text-4xl sm:text-6xl font-mono font-bold text-white w-full text-center focus:outline-none placeholder-slate-800/50"
                        autoFocus
                     />
                  </div>
-                 {amount && <div className="text-slate-500 mt-2 font-mono">手数料: ¥0 (Best Rate Applied)</div>}
+                 {amount && <div className="text-slate-500 mt-2 font-mono">手数料: 0 (Best Rate Applied)</div>}
                  {method === 'cotra' && parseInt(amount) > 100000 && (
                      <div className="text-red-400 text-xs mt-2 font-bold flex items-center justify-center gap-1">
                          <AlertCircle size={12} /> ことら送金の上限は10万円です
@@ -653,7 +640,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   // --- STEP: Confirm (Redesigned) ---
   if (step === 'confirm') {
       return (
-        <div className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
+        <div key="confirm" className="anim-enter-right max-w-3xl mx-auto pb-20 relative">
           {renderHeader('内容確認')}
 
           <div className="space-y-6">
@@ -663,7 +650,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                     <div className="p-6 border-b border-slate-800 text-center">
                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">Total Amount</span>
                        <div className="text-4xl font-mono font-bold text-white tracking-tight drop-shadow-md">
-                          ¥ {parseInt(amount).toLocaleString()}
+                          {selectedSource.currency} {parseFloat(amount).toLocaleString()}
                        </div>
                        <span className="inline-block mt-2 px-2 py-0.5 bg-slate-900 rounded text-[10px] text-slate-400 border border-slate-800 flex items-center justify-center gap-1 mx-auto w-fit">
                           <Sparkles size={10} className="text-cyan-400" /> Best Rate: ¥0 (Godmode)
@@ -703,7 +690,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                           <div className="flex-1 border-l-2 border-slate-800 pl-4">
                              <div className="text-xs font-bold text-slate-500 uppercase mb-1">Sender (送金元)</div>
                              <div className="font-bold text-white">{senderName}</div>
-                             <div className="text-xs text-slate-500 mt-1">{selectedSource.bankName} {selectedSource.branchName}</div>
+                             <div className="text-xs text-slate-500 mt-1">{selectedSource.name}</div>
                           </div>
                        </div>
                     </div>
@@ -717,7 +704,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                 <div className="bg-yellow-950/20 border border-yellow-500/20 p-4 rounded-xl flex gap-3 items-start">
                    <AlertCircle size={20} className="text-yellow-500 shrink-0" />
                    <p className="text-xs text-yellow-200/70 leading-relaxed">
-                      This transaction will be processed immediately via the ΩMAX Priority Network. Please confirm details before signing.
+                      This transaction will be processed via the <span className="font-bold">Unified Bank Gateway</span> directly to the production mainnet.
                    </p>
                 </div>
 
@@ -745,7 +732,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
   // --- STEP 5: Complete (Digital Certificate) ---
   if (step === 'complete') {
      return (
-        <div className="flex flex-col items-center justify-center py-8 animate-in zoom-in-95 duration-500">
+        <div key="complete" className="flex flex-col items-center justify-center py-8 anim-scale-up">
             <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center ring-2 ring-green-500/50 shadow-[0_0_30px_rgba(34,197,94,0.4)] mb-6 relative">
                 <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping"></div>
                 <CheckCircle2 size={40} className="text-green-500 relative z-10" />
@@ -758,13 +745,17 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                 
                 <div className="text-center border-b-2 border-slate-800 pb-4 mb-6">
                     <h3 className="text-xl font-bold uppercase tracking-widest">Transaction Certificate</h3>
-                    <div className="text-[10px] text-slate-500 mt-1">TK Global Bank • Official Record</div>
+                    <div className="text-[10px] text-slate-500 mt-1">TK Global Bank • Gateway Confirmed</div>
                 </div>
 
                 <div className="space-y-4 text-sm relative z-10">
                     <div className="flex justify-between">
                         <span className="font-bold text-slate-600">Transaction ID</span>
-                        <span className="font-mono font-bold">{txId}</span>
+                        <span className="font-mono font-bold text-xs">{txId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="font-bold text-slate-600">Route</span>
+                        <span className="font-mono font-bold text-xs">{gatewayRoute}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="font-bold text-slate-600">Date</span>
@@ -772,7 +763,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
                     </div>
                     <div className="flex justify-between border-t border-slate-300 pt-2">
                         <span className="font-bold text-slate-600">Amount</span>
-                        <span className="font-mono font-bold text-lg">¥ {parseInt(amount).toLocaleString()}</span>
+                        <span className="font-mono font-bold text-lg">{selectedSource.currency} {parseFloat(amount).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="font-bold text-slate-600">Recipient</span>
