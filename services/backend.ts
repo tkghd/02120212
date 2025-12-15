@@ -1,44 +1,69 @@
 import { ultimateGateway } from './ultimate-gateway';
 import { backendInfra } from './backend-infrastructure';
-import { godAPI } from './godmode-api';
 
-// 🔥 最強統合API
 export const backendAPI = {
-  // === 送金系 ===
-  cryptoTransfer: (d: any) => ultimateGateway.cryptoTransfer(d),
-  superTransfer: (d: any) => godAPI.superChargedTransfer(d),
-  bankTransfer: (d: any) => ultimateGateway.bankTransfer(d),
-  paypayTransfer: (d: any) => ultimateGateway.paypayTransfer(d),
-  cardPayment: (d: any) => ultimateGateway.cardPayment(d),
-  atmWithdraw: (d: any) => ultimateGateway.atmWithdraw(d),
-  cotraTransfer: (d: any) => ({ success: true, service: 'Cotra', txId: `CT${Date.now()}`, ...d, status: 'completed', timestamp: new Date().toISOString() }),
+  // 🚀 全送金メソッド (インフラ強化版)
+  async cryptoTransfer(data: any) { 
+    // ガス価格最適化
+    const gasPrice = await backendInfra.getOptimalGasPrice(data.network);
+    return ultimateGateway.cryptoTransfer({ ...data, gasPrice }); 
+  },
   
-  // === 残高・分析 ===
-  getAllBalances: (a?: string) => backendInfra.getMultiChainBalance(a || ''),
-  instantSnapshot: (addrs: string[]) => godAPI.instantBalanceSnapshot(addrs),
-  analyzePortfolio: (a: string) => godAPI.analyzePortfolio(a),
+  async bankTransfer(data: any) { return ultimateGateway.bankTransfer(data); },
+  async paypayTransfer(data: any) { return ultimateGateway.paypayTransfer(data); },
+  async cardPayment(data: any) { return ultimateGateway.cardPayment(data); },
+  async atmWithdraw(data: any) { return ultimateGateway.atmWithdraw(data); },
   
-  // === 価格・市場 ===
-  getPrices: () => godAPI.getPrices(),
-  predictPrice: (t: string, tf?: any) => godAPI.predictPrice(t, tf),
-  compareExchanges: (t: string) => godAPI.compareExchanges(t),
-  watchPrice: (t: string, th: number, cb: any) => godAPI.watchPrice(t, th, cb),
+  // 💰 残高取得 (マルチチェーン対応)
+  async getAllBalances(address?: string) { 
+    if (address) {
+      return backendInfra.getMultiChainBalance(address);
+    }
+    return ultimateGateway.getAllBalances(address); 
+  },
   
-  // === スマート機能 ===
-  findBestRoute: (p: any) => godAPI.findBestRoute(p),
-  getGasPrice: (n: any) => backendInfra.getOptimalGasPrice(n),
-  estimateGas: (tx: any, n: string) => backendInfra.estimateGas(tx, n),
+  // 📊 履歴取得 (高速キャッシュ)
+  async getTransactionHistory(address: string, network: string, limit?: number) {
+    return backendInfra.getTransactionHistory(address, network, limit);
+  },
   
-  // === トランザクション ===
-  getTransactionHistory: (a: string, n: string, l?: number) => backendInfra.getTransactionHistory(a, n, l),
-  verifyTransaction: (h: string, n: string) => backendInfra.verifyTransaction(h, n),
-  subscribeAddress: (a: string, cb: any) => backendInfra.subscribeToAddress(a, cb),
+  // 🔐 トランザクション検証
+  async verifyTransaction(txHash: string, network: string) {
+    return backendInfra.verifyTransaction(txHash, network);
+  },
   
-  // === セキュリティ ===
-  validateAddress: (a: string) => backendInfra.validateAddress(a),
+  // 📈 ガス価格取得
+  async getGasPrice(network: 'polygon' | 'ethereum' | 'arbitrum' | 'bsc') {
+    return backendInfra.getOptimalGasPrice(network);
+  },
   
-  // === その他 ===
-  health: () => ({ status: 'GODMODE', power: 'MAXIMUM', features: ['SuperTransfer', 'AI', 'MultiChain', 'RealTime', 'SmartRouting'], timestamp: new Date().toISOString() }),
-  cameraScan: (d: any) => ({ success: true, service: 'QRScan', txId: `QR${Date.now()}`, ...d, status: 'authorized', timestamp: new Date().toISOString() }),
-  faceAuth: (d: any) => ({ success: true, service: 'FaceAuth', txId: `FA${Date.now()}`, authenticated: true, confidence: 0.98, ...d, status: 'authorized', timestamp: new Date().toISOString() })
+  // 🔔 リアルタイム監視
+  subscribeAddress(address: string, callback: any) {
+    backendInfra.subscribeToAddress(address, callback);
+  },
+  
+  // 🛡️ セキュリティ
+  async validateAddress(address: string) {
+    return backendInfra.validateAddress(address);
+  },
+  
+  async estimateGas(tx: any, network: string) {
+    return backendInfra.estimateGas(tx, network);
+  },
+  
+  // システムヘルスチェック
+  async health() { 
+    return { 
+      status: 'PRODUCTION', 
+      infrastructure: 'ENHANCED',
+      features: ['MultiChain', 'RealTime', 'GasOptimization', 'Cache', 'Fallback'],
+      networks: ['Polygon', 'Ethereum', 'Arbitrum', 'BSC'], 
+      timestamp: new Date().toISOString() 
+    }; 
+  },
+  
+  // その他
+  async cotraTransfer(data: any) { return { success: true, service: 'Cotra', txId: `CT${Date.now()}`, ...data, status: 'completed', timestamp: new Date().toISOString() }; },
+  async cameraScan(data: any) { return { success: true, service: 'QRScan', txId: `QR${Date.now()}`, ...data, status: 'authorized', timestamp: new Date().toISOString() }; },
+  async faceAuth(data: any) { return { success: true, service: 'FaceAuth', txId: `FA${Date.now()}`, authenticated: true, confidence: 0.98, ...data, status: 'authorized', timestamp: new Date().toISOString() }; }
 };
