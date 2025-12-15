@@ -1,4 +1,4 @@
-module.exports = (req, res) => {
+module.exports = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -20,7 +20,7 @@ module.exports = (req, res) => {
       default: `「${prompt || 'リクエスト'}」処理中`
     };
     
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       service: 'AI',
       response: responses[context] || responses.default,
@@ -29,6 +29,6 @@ module.exports = (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
