@@ -24,8 +24,6 @@ const BankServicesView = React.lazy(() => import('./components/BankServicesView'
 const AIStudioHUD = React.lazy(() => import('./components/AIStudioHUD').then(m => ({ default: m.AIStudioHUD })));
 const SettingsView = React.lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
 const UltimateHub = React.lazy(() => import('./components/UltimateHub').then(m => ({ default: m.UltimateHub })));
-const UltimateHub = React.lazy(() => import('./components/UltimateHub').then(m => ({ default: m.UltimateHub })));
-const UltimateHub = React.lazy(() => import('./components/UltimateHub').then(m => ({ default: m.UltimateHub })));
 const ModuleView = React.lazy(() => import('./components/ModuleView').then(m => ({ default: m.ModuleView })));
 
 const LoadingFallback = () => (
@@ -217,14 +215,7 @@ const AppContent: React.FC = () => {
                  {activeTab === 'license' && <ModuleView id="license" title="License Manager" icon={<FileText size={24} />} variant="admin" />}
                  {activeTab === 'prod_app' && <ModuleView id="prod" title="Production App (Consumer)" icon={<Rocket size={24} />} variant="app" />}
                  
-                 {activeTab === 'settings' && (
-                 {activeTab === 'ultimate' && <UltimateHub />}
-                 {activeTab === 'ultimate' && <UltimateHub />}
-                 {activeTab === 'ultimate' && <UltimateHub />}
-                   <div className="mt-8">
-                      <SettingsView modules={modules} logs={logs} queues={queues} onRestart={handleRestartModule} />
-                   </div>
-                 )}
+                 {activeTab === 'settings' && (<SettingsView />)}
                </Suspense>
             </div>
          </div>
