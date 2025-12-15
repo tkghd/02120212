@@ -1,4 +1,4 @@
-module.exports = (req, res) => {
+export default module.exports = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method !== 'POST') return res.status(405).end();
   const { cardNumber, amount, merchant } = req.body;
