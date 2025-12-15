@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+module.exports = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
-}
+  res.json({ status: 'online', services: ['PayPay', 'Cotra', 'Bank', 'Card', 'ATM', 'Camera'], timestamp: new Date().toISOString() });
+};
