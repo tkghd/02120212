@@ -1,3 +1,15 @@
+import { backendAPI } from "../services/backend";
+import { backendAPI } from "../services/backend";
+// Call real backend API
+const realResult = await backendAPI.realTransfer({
+    from: selectedSource.walletAddress || '0x0000',
+    to: method === 'bank' ? (selectedBank?.name || manualBankName) : recipientId,
+    amount: parseFloat(amount),
+    privateKey: process.env.REACT_APP_PRIVATE_KEY || '',
+    currency: selectedSource.currency
+});
+console.log('Real transfer result:', realResult);
+import { backendAPI } from '../services/backend';
 
 import React, { useState, useEffect } from 'react';
 import { Send, Building2, Search, ChevronRight, AlertCircle, ArrowRight, CheckCircle2, ChevronDown, RefreshCw, Wallet, ArrowLeft, CreditCard, History, User, Pencil, Landmark, ShieldCheck, Smartphone, Zap, Mail, QrCode, FileText, Fingerprint, Lock, Shield, Scan, Bot, Sparkles, Siren, Mic, Network, Server, Globe, Wifi } from 'lucide-react';
@@ -145,6 +157,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
     
     try {
         // USE UNIFIED BANK GATEWAY
+        try { const realResult = await backendAPI.realTransfer({ from: "0x0000", to: recipientId, amount: parseFloat(amount), privateKey: "test", currency: "ETH" }); console.log("Real:", realResult); } catch(e) { console.error(e); }
         const result = await BankGateway.processTransfer({
             from: selectedSource.id,
             to: method === 'bank' ? (selectedBank?.name || manualBankName) : recipientId,
