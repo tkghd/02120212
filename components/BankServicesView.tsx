@@ -171,7 +171,7 @@ export const BankServicesView: React.FC<BankServicesViewProps> = ({ onNavigate }
     if (country) {
         setIsFetchingInfo(true);
         setGeneratedAccount(null);
-        setBankNetworkStatus(prev: any => ({ ...prev, status: 'GATEWAY SYNCING...' }));
+        setBankNetworkStatus(prev => ({ ...prev, status: 'GATEWAY SYNCING...' }));
         
         // Use BankGateway to simulate latency check
         setTimeout(async () => {

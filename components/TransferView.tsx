@@ -147,7 +147,7 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
     
     try {
         // USE UNIFIED BANK GATEWAY
-        try { const realResult = await backendAPI.realTransfer({ from: "0x0000", to: recipientId, amount: parseFloat(amount), privateKey: "test", currency: "ETH" }); console.log("Real:", realResult); } catch(e) { console.error(e); }
+        const result = await BankGateway.processTransfer({
             from: selectedSource.id,
             to: method === 'bank' ? (selectedBank?.name || manualBankName) : recipientId,
             amount: parseInt(amount),
