@@ -16,6 +16,7 @@ const Dashboard = React.lazy(() => import('./components/Dashboard').then(m => ({
 const AssetsView = React.lazy(() => import('./components/AssetsView').then(m => ({ default: m.AssetsView })));
 const TransferView = React.lazy(() => import('./components/TransferView').then(m => ({ default: m.TransferView })));
 const ATMView = React.lazy(() => import('./components/ATMView').then(m => ({ default: m.ATMView })));
+const QRATMWithdraw = React.lazy(() => import('./components/QRATMWithdraw').then(m => ({ default: m.QRATMWithdraw })));
 const CardView = React.lazy(() => import('./components/CardView').then(m => ({ default: m.CardView })));
 const CryptoView = React.lazy(() => import('./components/CryptoView').then(m => ({ default: m.CryptoView })));
 const CorporateView = React.lazy(() => import('./components/CorporateView').then(m => ({ default: m.CorporateView })));
@@ -195,6 +196,7 @@ const AppContent: React.FC = () => {
                  {activeTab === 'assets' && <AssetsView wallet={wallet} ownerAccounts={ownerAccounts} onNavigate={handleTabChange} />}
                  {activeTab === 'transfer' && <TransferView wallet={wallet} ownerAccounts={ownerAccounts} apiBase={API_BASE} />}
                  {activeTab === 'atm' && <ATMView wallet={wallet} />}
+                 {activeTab === 'qr-atm' && <QRATMWithdraw />}
                  {activeTab === 'card' && <CardView />}
                  {activeTab === 'crypto' && <CryptoView wallet={wallet} onUpdateWallet={setWallet} onNavigate={handleTabChange} />}
                  {activeTab === 'bank_services' && <BankServicesView onNavigate={handleTabChange} />}

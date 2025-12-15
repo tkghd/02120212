@@ -493,3 +493,8 @@ export const ATMView: React.FC<ATMViewProps> = ({ wallet }) => {
     </div>
   );
 };
+
+// QR ATM Withdrawをインポート
+import { QRATMWithdraw } from './QRATMWithdraw';
+
+// 既存のATMViewに追加
