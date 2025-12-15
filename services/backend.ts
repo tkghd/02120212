@@ -1,2 +1,2 @@
-const API_URL = 'https://tkghd-project-6nnqh3eqz-boss-projects-634a9673.vercel.app';
+const API_URL = 'https://tkghd-project-jmhgqh07w-boss-projects-634a9673.vercel.app';
 export const backendAPI = { async health() { const r = await fetch(`${API_URL}/api/health`); return r.json(); }, async realTransfer(data: any) { const r = await fetch(`${API_URL}/api/transfer/real`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); if (!r.ok) throw new Error('Transfer failed'); return r.json(); }, async getBalance(address: string) { const r = await fetch(`${API_URL}/api/balance/${address}`); return r.json(); } };
