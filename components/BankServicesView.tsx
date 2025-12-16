@@ -152,7 +152,7 @@ export const BankServicesView: React.FC = () => {
     if (country) {
         setIsFetchingInfo(true);
         setGeneratedAccount(null);
-        setBankNetworkStatus(prev => ({ ...prev, status: 'SYNCING...' }));
+        setBankNetworkStatus((prev: any) => ({ ...prev, status: 'SYNCING...' }));
         
         // Simulate async network fetch for bank details
         setTimeout(() => {
