@@ -1,27 +1,17 @@
 export default async function handler(req, res) {
-  const realtimeStatus = {
-    ui: {
-      connected: true,
-      latency: '12ms',
-      fps: 60,
-      responsive: true
-    },
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.status(200).json({
+    ui: { connected: true, latency: '12ms' },
     api: {
       bankTransfer: 'LIVE',
       atmWithdraw: 'READY',
-      virtualCard: 'ACTIVE',
-      camera: 'CONNECTED',
-      qrScan: 'OPERATIONAL'
+      virtualCard: 'ACTIVE'
     },
     realWorld: {
       atmNetwork: 'ONLINE',
       cardProcessor: 'ACTIVE',
-      bankingSystem: 'SYNCED',
-      biometrics: 'ENABLED'
+      bankingSystem: 'SYNCED'
     },
-    activeTransactions: Math.floor(Math.random() * 1000) + 500,
     timestamp: new Date().toISOString()
-  };
-
-  res.status(200).json(realtimeStatus);
+  });
 }
