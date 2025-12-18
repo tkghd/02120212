@@ -1,14 +1,15 @@
 {
   "version": 2,
-  "env": {
-    "ANTHROPIC_API_KEY": "vck_2vmlrrLVIZPZ41LkOs9qevp@5aZzzOmaP72spJ2thS5N6iSTD748rsQ",
-    "POLYGON_RPC": "https://polygon-rpc.com",
-    "ETHEREUM_RPC": "https://eth.llamarpc.com"
-  },
-  "functions": {
-    "api/**/*.js": {
-      "memory": 1024,
-      "maxDuration": 10
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     }
-  }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    }
+  ]
 }
