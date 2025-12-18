@@ -1,18 +1,30 @@
 import { useState } from 'react';
-import * as api from '../lib/apiClient';
+import { API_BASE_URL } from '../config/api';
 
 export function useAPI() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const execute = async <T,>(fn: () => Promise<T>): Promise<T | null> => {
+  const callAPI = async (endpoint: string, options?: RequestInit) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await fn();
-      return result;
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
+      }
+
+      return await response.json();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      setError(errorMsg);
       return null;
     } finally {
       setLoading(false);
@@ -22,9 +34,11 @@ export function useAPI() {
   return {
     loading,
     error,
-    healthCheck: () => execute(api.healthCheck),
-    secureTransfer: (to: string, amount: number) => 
-      execute(() => api.secureTransfer(to, amount)),
-    callAI: (prompt: string) => execute(() => api.callAI(prompt)),
+    healthCheck: () => callAPI('/api/health'),
+    secureTransfer: (to: string, amount: number) =>
+      callAPI('/api/secure-transfer', {
+        method: 'POST',
+        body: JSON.stringify({ to, amount }),
+      }),
   };
 }
