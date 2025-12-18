@@ -19,7 +19,7 @@ module.exports = (req, res) => {
 
   res.status(200).json({ 
     status: 'ok', 
-    message: 'Secure Transfer API Ready' 
+    message: 'Secure Transfer API Ready',
+    timestamp: new Date().toISOString()
   });
 };
-// Updated Thu Dec 18 08:09:41 PM UTC 2025

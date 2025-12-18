@@ -1,4 +1,7 @@
-export default function handler(req, res) {
+module.exports = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.json({ status: 'PRODUCTION_LIVE', realtime: true, modules: 18, timestamp: new Date().toISOString() });
-}
+  res.status(200).json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+};
