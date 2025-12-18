@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "echo \"Skipping build for API-only deployment\"",
     "build:all": "tsc && vite build",
     "preview": "vite preview",
     "start": "node front/server.js",
