@@ -3,8 +3,18 @@ export default async function handler(req, res) {
   
   const { action } = req.query;
   
+  // POSTリクエストの場合は body も処理
+  if (req.method === 'POST' && action === 'secure-transfer') {
+    return res.status(200).json({ success: true });
+  }
+  
   // すべての機能を1つのエンドポイントに統合
   const responses = {
+    'secure-transfer': () => ({
+      message: 'POST /api/integrated?action=secure-transfer でリクエストしてください',
+      method: 'POST'
+    }),
+    
     'ai': () => ({
       message: 'AI機能はリクエストボディでプロンプトを送信してください',
       requiresApiKey: true
