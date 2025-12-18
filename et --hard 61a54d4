@@ -1,0 +1,50 @@
+[33mbf5b0cf[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Revert to working UI
+[33m3a912e6[m Update route.js
+[33m7a32377[m Update route.js
+[33me12823a[m Delete api directory
+[33m6a32208[m Create route.js
+[33m9f1a1cc[m Update App.tsx
+[33mef90476[m Create route.js
+[33md2e16c0[m Add REAL API helper to UniversalPaymentHub
+[33m79f789f[m Connect all send buttons to real API
+[33m7764d55[m Add transaction certificate UI
+[33ma6af279[m Add real-time transfer system
+[33m79acde4[m Enable REAL-time payments from existing UI buttons
+[33m707d9b1[m Bind SendButtons UI to all payment modules
+[33mceaad2b[m Enable REAL-time payments from existing UI inputs
+[33m130374f[m Add REAL-time SendButtons UI
+[33me0c54dc[m Add REAL-time SendButtons UI
+[33mce4a13c[m Initial commit: TKG Financial System
+[33mf8c9b73[m Add HUD page and favicon
+[33m61a54d4[m 🚀 Full System Integration - All Tabs & Modules Active ✨ Complete Features: - Cleaned up duplicate tabs (transfer/payments consolidated) - Universal Payment Hub with 6 payment methods - Camera service with QR scanning - Guaranteed settlement system - Real-time module monitoring - External API integration hub - All 15+ modules fully operational
+[33m61840d9[m 📸 Camera & Settlement System Integration ✨ Features: - Fixed camera activation (getUserMedia) - Improved QR code scanning - Camera permission handling - Guaranteed settlement system - Auto refund on failure - Settlement monitoring (3 confirmations) - Error handling for camera access
+[33mb8141d9[m 🎯 Integrate Universal Payment Hub into UI - Added Payments tab with ⚡ icon - Replaced Transfer view with UniversalPaymentHub - All 6 payment methods accessible - Real-time balance display - Camera/QR integration ready
+[33m42f91a5[m 💰 Complete Universal Payment System ✨ All Payment Methods: - Bank Transfer (ZENGIN NET) ✅ - PayPay Transfer ✅ - MetaMask/Web3 ✅ - Crypto (BTC, ETH, Polygon, BSC) ✅ - Card Payment ✅ - ATM with QR/Camera ✅
+[33m1b13dc7[m 💰 Universal Payment Integration + User Asset Sync ✨ Features: - Bank Transfer (ZENGIN NET) - PayPay Transfer - MetaMask/Web3 Integration - Crypto Transfer (Bitcoin, Ethereum, Polygon, BSC) - Card Payment - ATM Withdrawal with QR/Camera - Camera activation for QR scanning - Universal balance tracking (all payment methods) - Auto asset sync for all users - Real-time balance updates
+[33m6c3e7a0[m[33m ([m[1;31morigin/master[m[33m)[m 🔗 API Chain + Owner Dashboard Integration - Owner asset sync with real-time updates - API chain: Transfer → Balance → Sync → Dashboard - Enhanced error handling and logging - Real API transaction flow integration
+[33m3c31b57[m 👑 Owner Asset Sync
+[33m24fa71b[m Final cleanup
+[33mcddaf72[m Restore UI styling
+[33m2fba731[m Restore full UI design
+[33m43218c9[m Convert balance and ai APIs to export default
+[33m80ff888[m Convert all APIs to export default format
+[33m69f4380[m Fix API function format
+[33mf99e282[m Fix HTML parse error in index.html
+[33mb3ac0da[m Simplify vercel.json for API routes
+[33m8b3677e[m Convert APIs to Vercel Serverless format
+[33ma153873[m Fix API exports for Vercel
+[33m70fecff[m Fix Vercel API routing
+[33m28838fe[m Add AI API
+[33m4ba4e94[m Add AI API endpoint
+[33m4d7ff90[m Update app components and dependencies
+[33m8067118[m Fix index.html to load React app properly
+[33m0a7ec7b[m Production: All payment systems LIVE - Mon Dec 15 12:36:24 UTC 2025
+[33mc3e83fc[m Production: All payment systems LIVE - Mon Dec 15 12:34:54 UTC 2025
+[33m7cffd7a[m Production: All payment systems LIVE - Mon Dec 15 12:33:49 UTC 2025
+[33m673f798[m Production: All payment systems LIVE - Mon Dec 15 06:30:47 UTC 2025
+[33m3924c9f[m Production: All payment systems LIVE - Mon Dec 15 06:23:22 UTC 2025
+[33m7e89e7d[m Production: All payment systems LIVE - Mon Dec 15 06:16:39 UTC 2025
+[33me311d61[m production ready - real crypto transfers
+[33m0d91754[m add real payment gateway with metamask
+[33mc0a1c04[m add real payment gateway with metamask
+[33mb89ce03[m fix camera access
