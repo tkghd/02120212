@@ -6,7 +6,7 @@ export default async function handler(req,res){
  const r=await fetch("https://api.openai.com/v1/chat/completions",{
   method:"POST",
   headers:{ "Content-Type":"application/json","Authorization":`Bearer ${key}`},
-  body:JSON.stringify({model:"gpt-4.1-mini",messages:[{role:"user",content:prompt}]})
+  body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"user",content:prompt}]})
  });
  const j=await r.json();
  res.status(200).json({reply:j.choices?.[0]?.message?.content});
