@@ -6,6 +6,16 @@ export default function handler(req,res){
  if(!sig||!secret)return res.status(401).json({error:"unauthorized"});
  const body=JSON.stringify(req.body||{});
  const h=crypto.createHmac("sha256",secret).update(body).digest("hex");
- if(sig!==h)return res.status(403).json({error:"bad signature"});
+ 
+ // デバッグ情報を返す
+ if(sig!==h)return res.status(403).json({
+   error:"bad signature",
+   debug:{
+     receivedSig:sig,
+     expectedSig:h,
+     body:body,
+     secretLength:secret.length
+   }
+ });
  res.status(200).json({signed:true});
 }
