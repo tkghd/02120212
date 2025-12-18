@@ -1,25 +1,24 @@
-export default function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  if (req.method === 'POST') {
-    const { recipient, amount } = req.body || {};
-    return res.status(200).json({
-      success: true,
-      recipient,
-      amount,
-      timestamp: new Date().toISOString()
-    });
+  const { to, amount } = req.body || {};
+
+  if (!to || !amount) {
+    return res.status(400).json({ error: "Missing parameters" });
   }
 
-  res.status(200).json({ 
-    status: 'ok', 
-    message: 'Secure Transfer API Ready',
-    timestamp: new Date().toISOString()
+  const SECRET = process.env.TRANSFER_SECRET;
+
+  if (!SECRET) {
+    return res.status(500).json({ error: "Server not configured" });
+  }
+
+  // ダミー処理（ここに送金ロジック）
+  return res.status(200).json({
+    success: true,
+    to,
+    amount
   });
 }
