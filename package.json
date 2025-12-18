@@ -1,8 +1,5 @@
 {
   "name": "tkghd-system",
   "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "echo 'API-only deployment, no build needed'"
-  }
+  "type": "module"
 }
