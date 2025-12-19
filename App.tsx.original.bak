@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Wallet, Send, QrCode, CreditCard, Settings, User, Globe, Wifi, Zap, Bot, Crown, Palette, BarChart2, Heart, Building, Scale, ClipboardList, FileText, Smartphone, Grid, X, Coins, Landmark, Menu } from 'lucide-react';
-import { TransferAPIIntegration } from './components/TransferAPIIntegration';
 import { LoginScreen } from './components/LoginScreen';
 import { AssetsView } from './components/AssetsView';
 import { TransferView } from './components/TransferView';
@@ -69,17 +68,11 @@ const App: React.FC = () => {
       <header className="flex-none flex items-center justify-between bg-[#080812]/80 backdrop-blur-md px-5 py-4 z-30 border-b border-white/5 relative">
         <div className="flex items-center gap-3">
            <div className="relative group cursor-pointer" onClick={() => setActiveTab('settings')}>
-             <div className="absolute inset-0 bg-cyan-500 blur-md opacity-20 rounded-full animate-pulse">
-      <TransferAPIIntegration />
-    </div>
+             <div className="absolute inset-0 bg-cyan-500 blur-md opacity-20 rounded-full animate-pulse"></div>
              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-900 to-indigo-950 flex items-center justify-center text-lg text-cyan-400 border border-cyan-500/30 relative z-10 shadow-lg">
                💠
-             
-      <TransferAPIIntegration />
-    </div>
-           
-      <TransferAPIIntegration />
-    </div>
+             </div>
+           </div>
            <div className="flex flex-col">
              <h1 className="text-lg font-bold text-white tracking-tight leading-none">
                TK globalBank
@@ -90,35 +83,23 @@ const App: React.FC = () => {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                </span>
                <span className="text-[10px] text-amber-400 font-mono tracking-wider font-bold">ΩβαMAX ULTIMATE</span>
-             
-      <TransferAPIIntegration />
-    </div>
-           
-      <TransferAPIIntegration />
-    </div>
-        
-      <TransferAPIIntegration />
-    </div>
+             </div>
+           </div>
+        </div>
         
         <div className="flex items-center gap-3">
           <div className="hidden md:block">
              <RevenueCounter apiUrl="https://www.tkglobalbank.com/api/revenue" />
-          
-      <TransferAPIIntegration />
-    </div>
+          </div>
           <button className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:bg-white/10 hover:text-white transition-all relative overflow-hidden">
              <User size={18} />
           </button>
-        
-      <TransferAPIIntegration />
-    </div>
+        </div>
       </header>
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-hidden relative">
-         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none">
-      <TransferAPIIntegration />
-    </div>
+         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
          
          <div className="h-full overflow-y-auto custom-scrollbar p-4 pb-24 sm:p-6 sm:pb-6 scroll-smooth">
             <div key={activeTab} className="max-w-7xl mx-auto anim-enter-right">
@@ -145,17 +126,11 @@ const App: React.FC = () => {
                  <>
                    <div className="mt-8">
                       <SettingsView modules={modules} logs={logs} queues={queues} onRestart={handleRestartModule} />
-                   
-      <TransferAPIIntegration />
-    </div>
+                   </div>
                  </>
                )}
-            
-      <TransferAPIIntegration />
-    </div>
-         
-      <TransferAPIIntegration />
-    </div>
+            </div>
+         </div>
       </main>
 
       {/* Collapsible App Menu (Drawer) */}
@@ -181,9 +156,7 @@ const App: React.FC = () => {
               >
                 <Landmark size={28} className="group-hover:scale-110 transition-transform duration-300" />
               </button>
-           
-      <TransferAPIIntegration />
-    </div>
+           </div>
            
            <NavButton active={activeTab === 'ai_hud'} onClick={() => handleTabChange('ai_hud')} icon={<Bot size={24} />} label="AI HUD" />
            
@@ -194,18 +167,12 @@ const App: React.FC = () => {
            >
               <div className={`p-1 transition-all duration-300 ${isMenuOpen ? 'scale-110' : ''}`}>
                  {isMenuOpen ? <X size={24} /> : <Grid size={24} />}
-              
-      <TransferAPIIntegration />
-    </div>
+              </div>
               <span className="text-xs font-medium tracking-tight">Apps</span>
            </button>
 
-        
-      <TransferAPIIntegration />
-    </div>
+        </div>
       </nav>
-    
-      <TransferAPIIntegration />
     </div>
   );
 };
@@ -217,8 +184,6 @@ const NavButton: React.FC<{ active: boolean; onClick: () => void; icon: React.Re
   >
     <div className={`p-1 transition-all duration-300 ${active ? 'scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]' : ''}`}>
       {icon}
-    
-      <TransferAPIIntegration />
     </div>
     <span className="text-xs font-medium tracking-tight">{label}</span>
   </button>

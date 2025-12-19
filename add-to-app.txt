@@ -1,0 +1,6 @@
+
+// APIファイル統合用のインポート（既存のimportセクションに追加）
+import { TransferAPIIntegration } from './components/TransferAPIIntegration';
+
+// return文の一番最後、</div>の直前に追加：
+      <TransferAPIIntegration />
