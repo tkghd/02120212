@@ -190,3 +190,6 @@ const NavButton: React.FC<{ active: boolean; onClick: () => void; icon: React.Re
 );
 
 export default App;
+
+// ファイル末尾に追加
+// LuxuryCardsViewとOwnerVaultViewのインポートを追加してください
