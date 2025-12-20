@@ -1,5 +1,6 @@
 {
+  "name": "webapp-02120212",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "outputDirectory": "dist"
 }
