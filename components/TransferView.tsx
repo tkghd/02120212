@@ -113,22 +113,50 @@ export const TransferView: React.FC<TransferViewProps> = ({ wallet, ownerAccount
     setStep('processing_auth');
     setIsProcessing(true);
     
-    // 3-Factor Auth Simulation
-    setProcessingStage('Authenticating Biometrics...');
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      // 3-Factor Auth Simulation
+      setProcessingStage('Authenticating Biometrics...');
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-    setProcessingStage('Verifying Device Security (ΩMAX)...');
-    await new Promise(resolve => setTimeout(resolve, 800));
+      setProcessingStage('Verifying Device Security (ΩMAX)...');
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-    setProcessingStage('Signing Digital Certificate...');
-    await new Promise(resolve => setTimeout(resolve, 800));
+      setProcessingStage('Signing Digital Certificate...');
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-    setProcessingStage('Executing Instant Settlement...');
-    await new Promise(resolve => setTimeout(resolve, 600));
+      setProcessingStage('Executing Transfer to Railway Backend...');
+      
+      // REAL API呼び出し
+      const response = await fetch('https://hopeful-liberation-production-9d00.up.railway.app/api/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: method === 'bank' ? accountNumber : recipientId,
+          amount: parseFloat(amount),
+          method: method,
+          bank: selectedBank?.name,
+          branch: branchName,
+          accountType: accountType,
+          senderName: senderName
+        })
+      });
 
-    setTxId(`TX-${Math.floor(Math.random() * 1000000000)}`);
-    setIsProcessing(false);
-    setStep('complete');
+      const data = await response.json();
+      
+      if (data.success) {
+        setTxId(data.txHash);
+        setIsProcessing(false);
+        setStep('complete');
+      } else {
+        throw new Error(data.error || '送金に失敗しました');
+      }
+    } catch (error) {
+      console.error('Transfer error:', error);
+      alert('送金エラー: ' + error.message);
+      setIsProcessing(false);
+      setStep('confirm');
+    }
+  };
   };
 
   const autoFillBank = () => {
