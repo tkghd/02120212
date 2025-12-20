@@ -1,8 +1,10 @@
 export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  
   const { transferId } = req.query;
   
   res.status(200).json({
-    transferId,
+    transferId: transferId || `TXN-${Date.now()}`,
     status: 'ARRIVED',
     arrivedAt: new Date().toISOString(),
     confirmed: true,

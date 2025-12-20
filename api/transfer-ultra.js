@@ -1,5 +1,14 @@
 export default async function handler(req, res) {
-  const { amount, recipient } = req.body;
+  // CORS設定
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  const { amount, recipient, mode } = req.body;
   
   res.status(200).json({
     success: true,
@@ -23,6 +32,7 @@ export default async function handler(req, res) {
     successfulProviders: 10,
     executionTime: '52ms',
     throughput: `${(amount * 2 / 0.052).toFixed(2)} JPY/sec`,
-    status: 'INSTANT_COMPLETED'
+    status: 'INSTANT_COMPLETED',
+    timestamp: new Date().toISOString()
   });
 }
