@@ -1,0 +1,6 @@
+#!/bin/bash
+# check-env.sh
+
+echo "BANK_API_KEY=$BANK_API_KEY"
+echo "PAYPAY_API_KEY=$PAYPAY_API_KEY"
+echo "WALLET_PRIVATE_KEY=$WALLET_PRIVATE_KEY"
