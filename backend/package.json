@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "migrate": "node scripts/migrate.js",
+    "migrate": "node migrate.js",
     "deploy": "npm run migrate && git push origin main"
   },
   "dependencies": {
