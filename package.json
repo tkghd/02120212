@@ -1,9 +1,9 @@
 {
   "name": "tkghd-transfer-api",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node railway-server.js",
+    "start": "node index.js",
     "dev": "node server.js"
   },
   "dependencies": {
