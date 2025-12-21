@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Send } from 'lucide-react';
 
-const API = 'https://hopeful-liberation-production-9d00.up.railway.app';
+const API = 'http://localhost:8080';
 
 export default function TransferHub() {
   const [form, setForm] = useState({ to: '', amount: '', note: '' });
