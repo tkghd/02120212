@@ -1,249 +1,212 @@
 const express = require('express');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// 環境変数
-const JWT_SECRET = process.env.JWT_SECRET || 'tkgbank-production-secret-2025-secure-key';
-const REAL_TRANSFER_ENABLED = process.env.REAL_TRANSFER_ENABLED === 'true';
-
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors());
 app.use(express.json());
 
-/*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * 💾 リアルタイムデータベース (本番口座連携)
- *━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*/
-const REAL_DB = {
-  accounts: new Map([
-    ['TKG-OWNER-001', {
-      id: 'TKG-OWNER-001',
-      name: 'TKG Owner',
-      balance: 2_000_000_000_000_000, // 2000兆円
-      realBankAccounts: [
-        { bank: '住信SBIネット銀行', branch: 'イチゴ', number: '9273342', balance: 80_600_000_000_000 },
-        { bank: 'みんな銀行', branch: 'ブリッジ', number: '2439188', balance: 41_300_000_000_000 },
-        { bank: '三井住友銀行', branch: '六本木', number: '9469248', balance: 95_800_000_000_000 }
-      ],
-      cards: [
-        { type: 'TKG INFINITE BLACK', number: '4980****9010', limit: 'UNLIMITED', cvv: '892' }
-      ],
-      crypto: {
-        ETH: { balance: 999_999, address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F' },
-        BTC: { balance: 99_999_999, address: 'bc1qxxxxxxxxxxxxxxxxxxxxxxxxx' }
-      }
-    }]
+// メモリストア
+const store = {
+  users: new Map([
+    ['TKG-OWNER-001', { id: 'TKG-OWNER-001', name: 'TKG Owner', balance: 2000000000000000 }],
+    ['user2', { id: 'user2', name: 'User 2', balance: 100000 }]
   ]),
-  transactions: [],
-  atmWithdrawals: []
+  transactions: new Map()
 };
 
-/*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * 🔐 JWT認証
- *━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*/
-function verifyToken(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'NO_TOKEN' });
-  
-  try {
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
-  } catch {
-    res.status(401).json({ error: 'INVALID_TOKEN' });
-  }
-}
-
-// トークン発行
-app.post('/api/auth/token', (req, res) => {
-  const token = jwt.sign({
-    id: 'user_1190212',
-    email: 'owner@tkghd.global',
-    role: 'owner'
-  }, JWT_SECRET, { expiresIn: '7d' });
-  
-  res.json({ success: true, token });
+// ヘルスチェック
+app.get('/', (req, res) => {
+  res.json({ status: 'OK', message: 'TKG Transfer API Running', timestamp: new Date() });
 });
 
-/*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * 💸 REAL送金API (本番口座反映)
- *━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*/
-function executeRealTransfer({ from, to, amount, type, bank }) {
-  const txId = `REAL-${type}-${Date.now()}-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'healthy', uptime: process.uptime() });
+});
+
+// 残高照会
+app.get('/api/balance/:userId', (req, res) => {
+  const user = store.users.get(req.params.userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json({ balance: user.balance, currency: 'JPY', userId: user.id });
+});
+
+// 即時送金
+app.post('/api/transfer/instant', (req, res) => {
+  const { fromUserId, toIdentifier, amount, note } = req.body;
+  
+  const fromUser = store.users.get(fromUserId);
+  if (!fromUser) return res.status(404).json({ error: 'Sender not found' });
+  if (fromUser.balance < amount) return res.status(400).json({ error: 'Insufficient balance' });
+  
+  const txId = `TX${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
   
   const transaction = {
-    txId,
-    from,
-    to,
+    id: txId,
+    fromUserId,
+    toIdentifier,
     amount,
-    type,
-    bank,
-    status: REAL_TRANSFER_ENABLED ? 'COMPLETED' : 'SIMULATED',
-    realBankReflected: REAL_TRANSFER_ENABLED,
-    withdrawable: REAL_TRANSFER_ENABLED,
-    timestamp: new Date().toISOString()
+    note,
+    status: 'completed',
+    fee: 0,
+    createdAt: new Date().toISOString(),
+    completedAt: new Date().toISOString()
   };
   
-  REAL_DB.transactions.push(transaction);
-  return transaction;
-}
-
-// Health
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    mode: 'PRODUCTION',
-    realTransferEnabled: REAL_TRANSFER_ENABLED,
-    timestamp: new Date().toISOString()
-  });
+  // 残高更新
+  fromUser.balance -= amount;
+  store.transactions.set(txId, transaction);
+  
+  console.log(`✅ Transfer completed: ${txId} - ¥${amount}`);
+  
+  res.json(transaction);
 });
 
-// システム状態 (UI用)
-app.get('/api/system/status', (req, res) => {
-  res.json({
-    success: true,
-    mode: 'PRODUCTION',
-    online: true,
-    realTransferEnabled: REAL_TRANSFER_ENABLED,
-    modules: {
-      banking: { sbi: 'ONLINE', rakuten: 'ONLINE', paypay: 'ONLINE' },
-      transfer: { domestic: 'ONLINE', crypto: 'ONLINE', international: 'ONLINE' },
-      compliance: { kyc: 'ACTIVE', aml: 'ACTIVE', fraud: 'ACTIVE' },
-      card: 'ONLINE',
-      atm: 'ONLINE',
-      camera: 'ONLINE'
-    }
-  });
-});
-
-// 口座情報 (UI用)
-app.get('/api/accounts/real', verifyToken, (req, res) => {
-  const account = REAL_DB.accounts.get('TKG-OWNER-001');
-  res.json({
-    success: true,
-    account: {
-      ...account,
-      balance: account.balance.toLocaleString(),
-      totalBankBalance: account.realBankAccounts.reduce((s, a) => s + a.balance, 0).toLocaleString()
-    }
-  });
-});
-
-// 国内銀行送金 (REAL)
-app.post('/api/remit/domestic', verifyToken, (req, res) => {
-  const { fromAccount, toAccount, amount, bankCode } = req.body;
+// 銀行振込
+app.post('/api/transfer/bank', (req, res) => {
+  const { fromAccountId, toBankCode, toAccountNumber, toAccountName, amount } = req.body;
   
-  const tx = executeRealTransfer({
-    from: fromAccount || 'TKG-OWNER-001',
-    to: toAccount,
-    amount: Number(amount),
-    type: 'DOMESTIC',
-    bank: bankCode || 'SBI'
-  });
+  const txId = `BNK${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
   
-  res.json({
-    success: true,
-    ...tx,
-    message: REAL_TRANSFER_ENABLED ? '本番口座に反映されました' : 'シミュレーションモード'
-  });
-});
-
-// 暗号資産送金 (REAL)
-app.post('/api/remit/crypto', verifyToken, (req, res) => {
-  const { fromAddress, toAddress, amount, currency } = req.body;
-  
-  const tx = executeRealTransfer({
-    from: fromAddress || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-    to: toAddress,
-    amount: Number(amount),
-    type: 'CRYPTO',
-    bank: currency
-  });
-  
-  res.json({
-    success: true,
-    ...tx,
-    network: 'ethereum'
-  });
-});
-
-// ATM引出し (カメラ連動)
-app.post('/api/atm/withdraw', verifyToken, (req, res) => {
-  const { amount, location, qrCode } = req.body;
-  
-  const withdrawal = {
-    id: `ATM-${Date.now()}`,
-    amount: Number(amount),
-    location,
-    qrCode,
-    status: 'APPROVED',
-    realCashDispensed: REAL_TRANSFER_ENABLED,
-    timestamp: new Date().toISOString()
+  const transaction = {
+    id: txId,
+    type: 'bank_transfer',
+    fromAccountId,
+    toBankCode,
+    toAccountNumber,
+    toAccountName,
+    amount,
+    status: 'completed',
+    fee: amount > 30000 ? 0 : 165,
+    createdAt: new Date().toISOString()
   };
   
-  REAL_DB.atmWithdrawals.push(withdrawal);
+  store.transactions.set(txId, transaction);
+  res.json(transaction);
+});
+
+// QRコード生成
+app.post('/api/qr/generate', (req, res) => {
+  const { userId, amount } = req.body;
+  const qrData = {
+    userId,
+    amount,
+    timestamp: Date.now(),
+    expiresAt: Date.now() + 5 * 60 * 1000
+  };
+  
+  const qrCode = Buffer.from(JSON.stringify(qrData)).toString('base64');
+  res.json({ qrCode, expiresAt: qrData.expiresAt });
+});
+
+// QR送金
+app.post('/api/transfer/qr', (req, res) => {
+  const { fromUserId, qrCode, amount } = req.body;
+  
+  const qrData = JSON.parse(Buffer.from(qrCode, 'base64').toString());
+  
+  const txId = `QR${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  
+  const transaction = {
+    id: txId,
+    type: 'qr_transfer',
+    fromUserId,
+    toUserId: qrData.userId,
+    amount,
+    status: 'completed',
+    fee: 0,
+    createdAt: new Date().toISOString()
+  };
+  
+  store.transactions.set(txId, transaction);
+  res.json(transaction);
+});
+
+// 国際送金
+app.post('/api/transfer/international', (req, res) => {
+  const { fromUserId, country, amount, fromCurrency, toCurrency } = req.body;
+  
+  const rates = { 'JPY_USD': 0.0067, 'JPY_EUR': 0.0061, 'JPY_GBP': 0.0053 };
+  const rate = rates[`${fromCurrency}_${toCurrency}`] || 1;
+  
+  const txId = `INT${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  
+  const transaction = {
+    id: txId,
+    type: 'international',
+    fromUserId,
+    country,
+    amount,
+    fromCurrency,
+    toCurrency,
+    exchangeRate: rate,
+    convertedAmount: amount * rate,
+    fee: amount * 0.02,
+    status: 'processing',
+    createdAt: new Date().toISOString(),
+    estimatedArrival: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+  };
+  
+  store.transactions.set(txId, transaction);
+  res.json(transaction);
+});
+
+// グループ送金
+app.post('/api/transfer/group', (req, res) => {
+  const { organizerId, participants, totalAmount, description } = req.body;
+  
+  const groupId = `GRP${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  
+  const group = {
+    id: groupId,
+    organizerId,
+    participants,
+    totalAmount,
+    amountPerPerson: totalAmount / participants.length,
+    description,
+    status: 'collecting',
+    createdAt: new Date().toISOString()
+  };
+  
+  store.transactions.set(groupId, group);
+  res.json(group);
+});
+
+// 為替レート
+app.get('/api/exchange-rate/:from/:to', (req, res) => {
+  const rates = {
+    'JPY_USD': 0.0067,
+    'JPY_EUR': 0.0061,
+    'JPY_GBP': 0.0053,
+    'USD_JPY': 149.5,
+    'EUR_JPY': 163.2
+  };
+  
+  const rate = rates[`${req.params.from}_${req.params.to}`] || 1;
   
   res.json({
-    success: true,
-    ...withdrawal,
-    message: REAL_TRANSFER_ENABLED ? '現金引出可能' : 'テストモード'
+    from: req.params.from,
+    to: req.params.to,
+    rate,
+    timestamp: new Date().toISOString()
   });
 });
 
-// カード情報 (Luxury Card)
-app.get('/api/cards/luxury', verifyToken, (req, res) => {
-  const account = REAL_DB.accounts.get('TKG-OWNER-001');
-  res.json({
-    success: true,
-    cards: account.cards
-  });
-});
-
-// 取引履歴
-app.get('/api/transactions', verifyToken, (req, res) => {
-  res.json({
-    success: true,
-    total: REAL_DB.transactions.length,
-    transactions: REAL_DB.transactions.slice(-50)
-  });
-});
-
-// Real Transfer (統合)
-app.post('/api/real-transfer', verifyToken, (req, res) => {
-  const { chain, bank, address, amount } = req.body;
+// 送金履歴
+app.get('/api/transfers/:userId', (req, res) => {
+  const transactions = Array.from(store.transactions.values())
+    .filter(tx => tx.fromUserId === req.params.userId || tx.toUserId === req.params.userId)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
-  const tx = executeRealTransfer({
-    from: 'TKG-OWNER-001',
-    to: address,
-    amount: Number(amount),
-    type: 'REAL',
-    bank: bank || chain
-  });
-  
-  res.json({
-    success: true,
-    ...tx
-  });
+  res.json({ transactions });
 });
 
-/*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * 🚀 SERVER START
- *━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*/
 app.listen(PORT, () => {
   console.log(`
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔥 TKG REAL BACKEND - PRODUCTION MODE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📍 Port: ${PORT}
-🌐 Frontend: https://tkghd.vercel.app
-💰 REAL Transfer: ${REAL_TRANSFER_ENABLED ? '✅ ENABLED' : '⚠️ SIMULATED'}
-🏦 Bank Integration: LIVE
-💳 Card System: LUXURY CARD ACTIVE
-🏧 ATM Network: CONNECTED
-📷 Camera QR: ENABLED
-
-🚀 ALL SYSTEMS OPERATIONAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+╔════════════════════════════════════════╗
+║   🚀 TKG TRANSFER API RUNNING         ║
+║   Port: ${PORT}                       ║
+║   Status: READY FOR TRANSFERS         ║
+╚════════════════════════════════════════╝
   `);
 });
