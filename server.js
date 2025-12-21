@@ -305,3 +305,37 @@ app.post('/api/real-transfer', async (req, res) => {
   });
 });
 // Updated Sun Dec 21 04:23:56 AM UTC 2025
+
+// ============ Remit API ============
+app.post('/api/remit/domestic', (req, res) => {
+  const { fromAccount, toAccount, amount, bankCode } = req.body;
+  res.json({
+    success: true,
+    transactionId: `DOM-${Date.now()}`,
+    fromAccount, toAccount, amount, bankCode,
+    status: 'completed',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.post('/api/remit/crypto', (req, res) => {
+  const { fromAddress, toAddress, amount, currency } = req.body;
+  res.json({
+    success: true,
+    transactionId: `CRY-${Date.now()}`,
+    fromAddress, toAddress, amount, currency,
+    status: 'pending',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.post('/api/real-transfer', (req, res) => {
+  const { chain, bank, address, amount } = req.body;
+  res.json({
+    success: true,
+    transactionId: `${chain}-${Date.now()}`,
+    chain, bank, address, amount,
+    status: 'processing',
+    timestamp: new Date().toISOString()
+  });
+});
