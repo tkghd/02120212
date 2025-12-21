@@ -1,5 +1,8 @@
-require('dotenv').config();
-const { Pool } = require('pg');
+import dotenv from 'dotenv';
+import pkg from 'pg';
+const { Pool } = pkg;
+
+dotenv.config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -27,8 +30,17 @@ const migrate = async () => {
       );
     `);
     console.log('✅ マイグレーション完了');
+    
+    // テーブル一覧を表示
+    const tables = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `);
+    console.log('📋 作成されたテーブル:', tables.rows.map(r => r.table_name).join(', '));
+    
   } catch (err) {
-    console.error('❌ マイグレーション失敗:', err);
+    console.error('❌ マイグレーション失敗:', err.message);
     process.exit(1);
   } finally {
     await pool.end();
