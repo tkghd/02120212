@@ -1,0 +1,13 @@
+DATABASE_URL=postgresql://postgres.xxxxxxxx:YourPassword@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres
+REAL_API_KEY=sk_live_XXXXXX
+JWT_SECRET=ランダムな文字列
+ENCRYPTION_KEY=ランダムな文字列
+FRONTEND_URL=https://tkghd.vercel.app
+NODE_ENV=production
+DATABASE_URL=postgresql://postgres.xxxxxxxx:YourPassword@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres
+REAL_API_KEY=sk_live_XXXXXX
+JWT_SECRET=ランダムな文字列
+ENCRYPTION_KEY=ランダムな文字列
+FRONTEND_URL=https://tkghd.vercel.app
+NODE_ENV=production
+DATABASE_URL=
