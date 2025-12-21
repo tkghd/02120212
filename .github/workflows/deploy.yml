@@ -1,0 +1,25 @@
+name: Deploy
+on: [push]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: { node-version: '20' }
+      - run: npm install
+      - run: npm run build || true
+      - name: Railway Deploy
+        run: npx railway up --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          NODE_ENV: production
+          REAL_TRANSFER_ENABLED: "true"
+          CRYPTO_TRANSFER_ENABLED: "true"
+          AUDIT_LOG_ENABLED: "true"
+          FRAUD_DETECTION_ENABLED: "true"
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SBI_API_KEY: ${{ secrets.SBI_API_KEY }}
+          RAKUTEN_API_KEY: ${{ secrets.RAKUTEN_API_KEY }}
+          PAYPAY_API_KEY: ${{ secrets.PAYPAY_API_KEY }}
+          INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
