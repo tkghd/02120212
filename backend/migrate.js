@@ -1,37 +1,26 @@
 import pg from 'pg';
+import fs from 'fs';
 
-const pool = new pg.Pool({ 
-  connectionString: process.env.DATABASE_URL, 
-  ssl: { rejectUnauthorized: false } 
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
-const sql = `
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL,
-  full_name TEXT,
-  wallet_address TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
+async function migrate() {
+  try {
+    console.log('🔄 Running database migrations...');
+    
+    const sql = fs.readFileSync('./migrations/001_initial_schema.sql', 'utf8');
+    await pool.query(sql);
+    
+    console.log('✅ Migration completed successfully');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Migration failed:', error.message);
+    process.exit(1);
+  } finally {
+    await pool.end();
+  }
+}
 
-CREATE TABLE IF NOT EXISTS transactions (
-  id SERIAL PRIMARY KEY,
-  from_account TEXT,
-  to_account TEXT,
-  amount NUMERIC,
-  currency TEXT DEFAULT 'JPY',
-  created_at TIMESTAMP DEFAULT NOW()
-);
-`;
-
-pool.query(sql)
-  .then(() => { 
-    console.log('✅ Migration complete'); 
-    pool.end(); 
-  })
-  .catch(err => { 
-    console.error('❌ Migration failed:', err); 
-    pool.end(); 
-    process.exit(1); 
-  });
+migrate();
