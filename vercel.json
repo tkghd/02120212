@@ -1,13 +1,12 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" }
-  ],
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs20.x",
-      "memory": 3008,
-      "maxDuration": 60
+  "name": "tkghd",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://hopeful-liberation-production-9d00.up.railway.app"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "https://hopeful-liberation-production-9d00.up.railway.app"
     }
   }
 }
