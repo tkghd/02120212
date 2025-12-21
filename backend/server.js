@@ -182,3 +182,37 @@ app.get('/api/cards/premium', verifyToken, (req, res) => {
     cards
   });
 });
+
+// 送金API
+app.post('/api/remit/domestic', async (req, res) => {
+  const { fromAccount, toAccount, amount, bankCode } = req.body;
+  res.json({
+    success: true,
+    transactionId: `DOM-${Date.now()}`,
+    fromAccount, toAccount, amount, bankCode,
+    status: 'completed',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.post('/api/remit/crypto', async (req, res) => {
+  const { fromAddress, toAddress, amount, currency } = req.body;
+  res.json({
+    success: true,
+    transactionId: `CRY-${Date.now()}`,
+    fromAddress, toAddress, amount, currency,
+    status: 'pending',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.post('/api/real-transfer', async (req, res) => {
+  const { chain, bank, address, amount } = req.body;
+  res.json({
+    success: true,
+    transactionId: `${chain}-${Date.now()}`,
+    chain, bank, address, amount,
+    status: 'processing',
+    timestamp: new Date().toISOString()
+  });
+});
