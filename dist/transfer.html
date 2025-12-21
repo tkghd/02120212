@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><title>Transfer</title></head>
+<body>
+  <h1>🚀 Transfer System</h1>
+  <input id="recipient" placeholder="Address" value="0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb" style="width:100%;padding:10px;margin:10px 0">
+  <input id="amount" placeholder="Amount" value="0.001" style="width:100%;padding:10px;margin:10px 0">
+  <button onclick="transfer()" style="width:100%;padding:15px;background:#0070f3;color:white;border:none;cursor:pointer">Send Transfer</button>
+  <div id="result" style="margin-top:20px;padding:15px;border:1px solid #ddd"></div>
+  <script>
+  async function transfer() {
+    const result = document.getElementById('result');
+    result.innerHTML = '⏳ Processing...';
+    try {
+      const r = await fetch('/api/secure-transfer', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          recipient: document.getElementById('recipient').value,
+          amount: document.getElementById('amount').value
+        })
+      });
+      const data = await r.json();
+      result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    } catch(e) {
+      result.innerHTML = '❌ Error: ' + e.message;
+    }
+  }
+  </script>
+</body>
+</html>
