@@ -5,11 +5,13 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "migrate": "node -e \"import('pg').then(({default:pg})=>{const pool=new pg.Pool({connectionString:process.env.DATABASE_URL,ssl:{rejectUnauthorized:false}});pool.query(require('fs').readFileSync('migrations/001_initial_schema.sql','utf8')).then(()=>console.log('✅ Migration complete')).catch(console.error).finally(()=>pool.end())})\""
+    "migrate": "node scripts/migrate.js",
+    "deploy": "npm run migrate && git push origin main"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
