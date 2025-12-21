@@ -4,7 +4,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use('/api/remit',(await import('./routes/remit.js')).default);
 
 // ============ REAL送金先アカウント ============
 const REAL_ACCOUNTS = {

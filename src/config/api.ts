@@ -1,10 +1,5 @@
-export const API_BASE_URL = 'https://tkghd-api.vercel.app';
+// Railway Backend URL
+export const API_BASE_URL = 'https://gentle-insight-production-df4a.up.railway.app';
 
-export const API_ENDPOINTS = {
-  health: '/api/health',
-  transfer: '/api/secure-transfer',
-  signed: '/api/signed',
-  ai: '/api/ai',
-  webhook: '/api/webhook',
-  ultimate: '/api/ultimate'
-} as const;
+// Fallback to local if Railway is down
+export const FALLBACK_URL = 'http://localhost:3000';

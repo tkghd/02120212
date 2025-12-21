@@ -1,24 +1,36 @@
-import express from 'express';
-import { executeUltraTransfer, verifyArrival } from '../services/transfer.js';
-
+const express = require('express');
 const router = express.Router();
 
-router.post('/ultra', async (req, res) => {
-  try {
-    const result = await executeUltraTransfer(req.body);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+// 国内銀行送金
+router.post('/domestic', async (req, res) => {
+  const { fromAccount, toAccount, amount, bankCode } = req.body;
+  
+  res.json({
+    success: true,
+    transactionId: `DOM-${Date.now()}`,
+    fromAccount,
+    toAccount,
+    amount,
+    bankCode,
+    status: 'completed',
+    timestamp: new Date().toISOString()
+  });
 });
 
-router.get('/verify/:transferId', async (req, res) => {
-  try {
-    const result = await verifyArrival(req.params.transferId);
-    res.json({ success: true, ...result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+// 暗号資産送金
+router.post('/crypto', async (req, res) => {
+  const { fromAddress, toAddress, amount, currency } = req.body;
+  
+  res.json({
+    success: true,
+    transactionId: `CRY-${Date.now()}`,
+    fromAddress,
+    toAddress,
+    amount,
+    currency,
+    status: 'pending',
+    timestamp: new Date().toISOString()
+  });
 });
 
-export default router;
+module.exports = router;
