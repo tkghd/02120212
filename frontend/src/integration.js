@@ -1,25 +1,14 @@
-// ============================================================================
-// 既存アプリへの統合コード
-// 既存のApp.jsやmain.jsに追加
-// ============================================================================
-
-import React from 'react';
-import LiveSystemStatus from './components/LiveSystemStatus';
-import api from './services/api';
-
-// 既存のAppコンポーネントにラップして追加
-export const withTKGBankIntegration = (ExistingApp) => {
-  return (props) => (
-    <>
-      <ExistingApp {...props} />
-      <LiveSystemStatus />
-    </>
+export async function realTransfer(payload, token){
+  const res = await fetch(
+    "https://hopeful-liberation-production-9d00.up.railway.app/api/transfer",
+    {
+      method: "POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    }
   );
-};
-
-// グローバルAPIアクセス (既存コードから使用可能)
-if (typeof window !== 'undefined') {
-  window.tkgbank = api;
+  return res.json();
 }
-
-export { api };

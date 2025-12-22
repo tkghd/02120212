@@ -1,15 +1,20 @@
-import express from 'express';
-import cors from 'cors';
+import cron from "node-cron";
+import fs from "fs";
+import { bankPing, rollbackTransfer } from "../services/BankGateway.js";
 
-const app = express();
-const PORT = process.env.PORT || 3100;
+export function auditTrail(event){
+  fs.appendFileSync(
+    "./audit.log",
+    JSON.stringify({event, ts:new Date().toISOString()})+"\n"
+  );
+}
 
-app.use(cors());
-app.use(express.json());
+cron.schedule("0 2 * * *", async ()=>{
+  const result = await bankPing();
+  auditTrail({type:"NIGHT_BATCH_PING", result});
+});
 
-app.get('/status', (req, res) => res.json({ system: 'ΩβαMAX', status: 'ONLINE', latency: 0 }));
-app.get('/api/revenue', (req, res) => res.json({ revenue: 145000000 + Math.floor(Math.random() * 10000) }));
-
-app.listen(PORT, () => {
-  console.log(`⚡ Integrated Core API running on port ${PORT}`);
+process.on("TRANSFER_FAILED", async (tx)=>{
+  await rollbackTransfer(tx);
+  auditTrail({type:"ROLLBACK", tx});
 });
