@@ -1,14 +1,17 @@
 {
-  "name": "tkghd-backend",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "server.js",
+  "name": "tkghd-ultimate-multiport",
+  "version": "3.0.0",
+  "main": "ultimate-backend.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node ultimate-backend.js",
+    "dev": "node ultimate-backend.js",
+    "test": "node verify-all-real-systems.sh"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
