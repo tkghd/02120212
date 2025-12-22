@@ -1,14 +1,12 @@
 {
-  "name": "tkghd-railway-full",
-  "version": "2.0.0",
-  "main": "railway-full-integration.js",
+  "name": "tkghd-ultimate",
+  "version": "3.0.0",
+  "main": "server.js",
   "scripts": {
-    "start": "node railway-full-integration.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "node-fetch": "^3.3.2"
-  },
-  "type": "module"
+    "cors": "^2.8.5"
+  }
 }
