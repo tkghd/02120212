@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Wallet, Send, QrCode, CreditCard, Settings, User, Globe, Wifi, Zap, Bot, Crown, Palette, BarChart2, Heart, Building, Scale, ClipboardList, FileText, Smartphone, Grid, X, Coins, Landmark, Menu } from 'lucide-react';
+import { FloatingTransferButton } from './components/FloatingTransferButton';
 import { TransferAPIIntegration } from './components/TransferAPIIntegration';
 import { LoginScreen } from './components/LoginScreen';
 import { AssetsView } from './components/AssetsView';
