@@ -64,4 +64,13 @@ module.exports = {
       env: { PORT: 3160, DEX_API_KEY: "DEX_API_KEY" }
     }
   ]
-};
+};  {
+    name: 'zengin_gateway',
+    script: './zengin-network-gateway.js',
+    instances: 1,
+    exec_mode: 'fork',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 8082
+    }
+  }
