@@ -1,14 +1,17 @@
 {
-  "name": "tkghd-backend",
-  "version": "1.0.0",
+  "name": "tkg-bank-backend",
+  "version": "9.0.0",
   "type": "module",
+  "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
-    "botid": "^1.5.10",
-    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "ws": "^8.18.3"
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
