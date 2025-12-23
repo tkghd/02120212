@@ -41,3 +41,5 @@ real-transfer.log
 
 # Railway
 .railway
+.env*.local
+node_modules/
