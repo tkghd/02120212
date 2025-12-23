@@ -1,3 +1,4 @@
+import UltimateRealTransferUI from './components/UltimateRealTransferUI';
 import React, { useState } from 'react';
 import AIAssistant from './components/AIAssistant';
 import UnifiedSystemDashboard from './components/UnifiedSystemDashboard';
@@ -16,6 +17,7 @@ function App() {
   ];
 
   return (
+    <UltimateRealTransferUI />
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
       {/* ヘッダー */}
       <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 shadow-2xl">
