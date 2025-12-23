@@ -347,3 +347,6 @@ app.get('/api/banking/international/status', (req, res) => {
 });
 
 console.log('✅ REAL海外銀行API統合完了 | Wise + Revolut + Plaid');
+
+import bankingRoutes from './routes/banking.js';
+app.use('/api/banking', bankingRoutes);
