@@ -10,36 +10,3 @@
     "cors": "^2.8.5"
   }
 }
-{
-  "name": "tkghd-finance-system",
-  "version": "1.0.0",
-  "scripts": {
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:api\"",
-    "dev:frontend": "cd frontend && next dev",
-    "dev:backend": "cd backend && node server.js",
-    "dev:api": "cd api && vercel dev",
-    "build": "npm run build:frontend && npm run build:backend",
-    "build:frontend": "cd frontend && next build",
-    "build:backend": "cd backend && npm run build",
-    "deploy": "npm run deploy:all",
-    "deploy:all": "concurrently \"npm run deploy:vercel\" \"npm run deploy:railway\" \"npm run deploy:azure\"",
-    "deploy:vercel": "cd frontend && vercel --prod",
-    "deploy:railway": "cd backend && railway up",
-    "deploy:azure": "cd api && vercel --prod",
-    "instant": "./scripts/instant-deploy.sh",
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "helmet": "^7.1.0",
-    "express-rate-limit": "^6.10.0",
-    "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2",
-    "nodemon": "^3.0.2"
-  }
-}
