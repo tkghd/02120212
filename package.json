@@ -1,17 +1,13 @@
 {
-  "name": "tk-global-bank-realworld",
-  "version": "5.0.0",
+  "name": "tk-global-bank-ultimate-complete",
+  "version": "6.0.0",
   "type": "module",
-  "main": "real-world-financial-system.js",
+  "main": "ultimate-complete-system.js",
   "scripts": {
-    "start": "node real-world-financial-system.js",
-    "dev": "node --watch real-world-financial-system.js"
+    "start": "node ultimate-complete-system.js"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }
