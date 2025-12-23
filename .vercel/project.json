@@ -1,1 +1,16 @@
-{"projectId":"prj_PKTWtGoxKQ6gCOzC1Jb76pWY57Li","orgId":"team_xyrDDe5yLbFM0n11SDqSQ4FH","projectName":"tkghd-api"}
+{
+  "projectId": "prj_PKTWtGoxKQ6gCOzC1Jb76pWY57Li",
+  "orgId": "team_xyrDDe5yLbFM0n11SDqSQ4FH",
+  "projectName": "tkghd-api",
+  "settings": {
+    "createdAt": 1766467677396,
+    "framework": "vite",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}
