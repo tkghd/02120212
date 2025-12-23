@@ -353,3 +353,7 @@ app.listen(PORT, '0.0.0.0', () => {
 ╚══════════════════════════════════════════════════════════╝
   `);
 });
+
+if (process.env.REAL_MODE === "true") {
+  console.log("🔥 REAL PRODUCTION MODE ENABLED");
+}

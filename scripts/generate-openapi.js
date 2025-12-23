@@ -1,0 +1,14 @@
+import fs from "fs";
+
+const openapi = {
+  openapi: "3.0.0",
+  info: { title: "TK GLOBAL BANK API", version: "1.0.0" },
+  servers: [{ url: "https://api.tkglobal.bank" }],
+  paths: {
+    "/api/system/health": { get: { summary: "Health Check", responses: { 200: { description: "OK" }}} },
+    "/api/transfer/execute": { post: { summary: "Unified Transfer Execute", responses: { 200: { description: "Executed" }}} }
+  }
+};
+
+fs.writeFileSync("openapi.json", JSON.stringify(openapi, null, 2));
+console.log("✅ openapi.json generated");
