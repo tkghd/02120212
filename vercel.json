@@ -1,12 +1,8 @@
 {
-  "version": 2,
-  "name": "tkghd",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://hopeful-liberation-production-9d00.up.railway.app"
-  },
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_API_URL": "https://hopeful-liberation-production-9d00.up.railway.app"
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://hopeful-liberation-production-9d00.up.railway.app/$1"
     }
-  }
+  ]
 }
