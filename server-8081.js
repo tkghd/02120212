@@ -3,7 +3,7 @@ const cors = require('cors');
 const crypto = require('crypto');
 
 const app = express();
-const PORT = process.env.PORT || 8081;
+const PORT = 8081;
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
