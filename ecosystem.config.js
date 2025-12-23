@@ -1,9 +1,14 @@
 module.exports = {
   apps: [{
-    name: 'tkg-bank',
+    name: 'tkg-bank-ultimate',
     script: 'server.js',
     instances: 1,
     autorestart: true,
-    max_memory_restart: '1G'
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 8080
+    }
   }]
 };
