@@ -1,1 +1,1 @@
-web: node server.js
+web: node ultimate-financial-system.js
