@@ -128,3 +128,222 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔐 REAL Mode: ${process.env.REAL_TRANSFER_ENABLED === 'true' ? 'ENABLED' : 'DISABLED'}`);
 });
+
+// ============================================
+// 🏦 REAL海外銀行API統合 (Wise + Revolut + Plaid)
+// ============================================
+
+const fetch = require('node-fetch');
+
+// 環境変数
+const WISE_API_KEY = process.env.WISE_API_KEY || 'sandbox_key';
+const WISE_BASE = process.env.WISE_ENV === 'production' ? 'https://api.transferwise.com' : 'https://api.sandbox.transferwise.tech';
+const REVOLUT_API_KEY = process.env.REVOLUT_API_KEY || 'sandbox_key';
+const REVOLUT_BASE = process.env.REVOLUT_ENV === 'production' ? 'https://b2b.revolut.com/api/1.0' : 'https://sandbox-b2b.revolut.com/api/1.0';
+const PLAID_CLIENT_ID = process.env.PLAID_CLIENT_ID;
+const PLAID_SECRET = process.env.PLAID_SECRET;
+const PLAID_ENV = process.env.PLAID_ENV || 'sandbox';
+
+// ============================================
+// WISE API エンドポイント
+// ============================================
+
+// Wise残高確認
+app.get('/api/banking/wise/balance', async (req, res) => {
+  try {
+    const response = await fetch(\`\${WISE_BASE}/v4/profiles/\${req.query.profileId}/balances\`, {
+      headers: { 'Authorization': \`Bearer \${WISE_API_KEY}\` }
+    });
+    const data = await response.json();
+    res.json({ success: true, provider: 'Wise', balances: data });
+  } catch (error) {
+    res.json({ success: false, error: error.message, mode: 'sandbox' });
+  }
+});
+
+// Wise送金実行
+app.post('/api/banking/wise/transfer', async (req, res) => {
+  const { targetAccount, quoteId, amount, currency, reference } = req.body;
+  try {
+    const response = await fetch(\`\${WISE_BASE}/v1/transfers\`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': \`Bearer \${WISE_API_KEY}\`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        targetAccount,
+        quoteUuid: quoteId,
+        customerTransactionId: \`TKG-WISE-\${Date.now()}\`,
+        details: { reference: reference || 'TKG Global Transfer' }
+      })
+    });
+    const data = await response.json();
+    res.json({ 
+      success: true, 
+      provider: 'Wise',
+      transfer: data,
+      tracking: \`TKG-WISE-\${Date.now()}\`
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// Wise為替レート取得
+app.get('/api/banking/wise/rates', async (req, res) => {
+  const { source = 'USD', target = 'JPY' } = req.query;
+  try {
+    const response = await fetch(\`\${WISE_BASE}/v1/rates?source=\${source}&target=\${target}\`, {
+      headers: { 'Authorization': \`Bearer \${WISE_API_KEY}\` }
+    });
+    const data = await response.json();
+    res.json({ success: true, provider: 'Wise', rates: data });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// ============================================
+// REVOLUT API エンドポイント
+// ============================================
+
+// Revolut口座一覧
+app.get('/api/banking/revolut/accounts', async (req, res) => {
+  try {
+    const response = await fetch(\`\${REVOLUT_BASE}/accounts\`, {
+      headers: { 'Authorization': \`Bearer \${REVOLUT_API_KEY}\` }
+    });
+    const data = await response.json();
+    res.json({ success: true, provider: 'Revolut', accounts: data });
+  } catch (error) {
+    res.json({ success: false, error: error.message, mode: 'sandbox' });
+  }
+});
+
+// Revolut送金実行
+app.post('/api/banking/revolut/pay', async (req, res) => {
+  const { accountId, counterpartyId, amount, currency, reference } = req.body;
+  try {
+    const response = await fetch(\`\${REVOLUT_BASE}/pay\`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': \`Bearer \${REVOLUT_API_KEY}\`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        request_id: \`TKG-REV-\${Date.now()}\`,
+        account_id: accountId,
+        receiver: { counterparty_id: counterpartyId },
+        amount,
+        currency,
+        reference: reference || 'TKG Global Payment'
+      })
+    });
+    const data = await response.json();
+    res.json({ 
+      success: true, 
+      provider: 'Revolut',
+      payment: data,
+      tracking: \`TKG-REV-\${Date.now()}\`
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// Revolut取引履歴
+app.get('/api/banking/revolut/transactions', async (req, res) => {
+  try {
+    const response = await fetch(\`\${REVOLUT_BASE}/transactions?from=\${req.query.from || '2024-01-01'}\`, {
+      headers: { 'Authorization': \`Bearer \${REVOLUT_API_KEY}\` }
+    });
+    const data = await response.json();
+    res.json({ success: true, provider: 'Revolut', transactions: data });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// ============================================
+// PLAID API エンドポイント
+// ============================================
+
+// Plaid Link Token生成
+app.post('/api/banking/plaid/link-token', async (req, res) => {
+  try {
+    const response = await fetch(\`https://\${PLAID_ENV}.plaid.com/link/token/create\`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: PLAID_CLIENT_ID,
+        secret: PLAID_SECRET,
+        user: { client_user_id: req.body.userId || \`TKG-USER-\${Date.now()}\` },
+        client_name: 'TKG Global Holdings',
+        products: ['auth', 'transactions', 'balance'],
+        country_codes: ['US', 'GB', 'FR', 'ES', 'NL', 'IE'],
+        language: 'en'
+      })
+    });
+    const data = await response.json();
+    res.json({ success: true, provider: 'Plaid', linkToken: data.link_token });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// Plaid口座残高
+app.post('/api/banking/plaid/balance', async (req, res) => {
+  try {
+    const response = await fetch(\`https://\${PLAID_ENV}.plaid.com/accounts/balance/get\`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: PLAID_CLIENT_ID,
+        secret: PLAID_SECRET,
+        access_token: req.body.accessToken
+      })
+    });
+    const data = await response.json();
+    res.json({ success: true, provider: 'Plaid', accounts: data.accounts });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// ============================================
+// 統合ステータスエンドポイント
+// ============================================
+
+app.get('/api/banking/international/status', (req, res) => {
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    integrations: {
+      wise: {
+        name: 'Wise (TransferWise)',
+        status: WISE_API_KEY !== 'sandbox_key' ? '🟢 LIVE' : '🟡 SANDBOX',
+        capabilities: ['国際送金', '160カ国対応', '40+通貨', 'リアルタイム為替'],
+        endpoint: '/api/banking/wise/*'
+      },
+      revolut: {
+        name: 'Revolut Business',
+        status: REVOLUT_API_KEY !== 'sandbox_key' ? '🟢 LIVE' : '🟡 SANDBOX',
+        capabilities: ['マルチ通貨口座', '30通貨対応', '即時送金', '為替取引'],
+        endpoint: '/api/banking/revolut/*'
+      },
+      plaid: {
+        name: 'Plaid',
+        status: PLAID_CLIENT_ID ? '🟢 LIVE' : '🟡 SANDBOX',
+        capabilities: ['米国銀行統合', '欧州銀行統合', '口座認証', '取引履歴'],
+        endpoint: '/api/banking/plaid/*'
+      }
+    },
+    totalProviders: 3,
+    supportedCountries: 160,
+    supportedCurrencies: 40,
+    mode: process.env.NODE_ENV || 'development'
+  });
+});
+
+console.log('✅ REAL海外銀行API統合完了 | Wise + Revolut + Plaid');

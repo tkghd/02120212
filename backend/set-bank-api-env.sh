@@ -1,0 +1,10 @@
+#!/bin/bash
+echo "🚂 Railway環境変数設定..."
+railway variables set WISE_API_KEY="your_key_here"
+railway variables set WISE_ENV="sandbox"
+railway variables set REVOLUT_API_KEY="your_key_here"
+railway variables set REVOLUT_ENV="sandbox"
+railway variables set PLAID_CLIENT_ID="your_id_here"
+railway variables set PLAID_SECRET="your_secret_here"
+railway variables set PLAID_ENV="sandbox"
+echo "✅ Railway環境変数設定完了"
