@@ -1,0 +1,35 @@
+{
+  "name": "TK Global Bank - Ultimate System",
+  "version": "3.0.0",
+  "deployments": {
+    "frontend": {
+      "main": "https://tkghd.vercel.app",
+      "sovereign": "https://tkghd.vercel.app/?access=sovereign"
+    },
+    "backend": {
+      "railway": "https://hopeful-liberation-production-9d00.up.railway.app",
+      "azure": "https://tkghd-api-azure.vercel.app"
+    }
+  },
+  "modules": {
+    "components": ["AIChat","AIStudioHUD","AppMenu","AssetsView","ATMView","BackendStatus","BankServicesView","BusinessChecklist","CardView","CorporateView","CryptoView","Dashboard","FloatingTransferButton","LogConsole","LoginScreen","LuxuryCardsView","MetricsChart","ModuleLinker","NotificationSystem","OwnerVaultView","ProdBadge","RealTransferButton","RealTransferPanel","RevenueCounter","SettingsView","StatusDashboard","TransferAPIIntegration","TransferView","TransferViewEnhanced","UnifiedTransfer","WorldMapHUD"],
+    "apis": [],
+    "utils": ["sign"]
+  },
+  "features": [
+    "口座開設（個人・法人）",
+    "REAL送金（国内・国際）",
+    "全銀ネットワーク（300+行）",
+    "ATM出金",
+    "カード決済",
+    "契約管理",
+    "自社通貨発行",
+    "法人資産管理",
+    "オーナーダッシュボード",
+    "暗号資産送金",
+    "AI異常検知",
+    "ゼロ知識証明",
+    "監査ログ"
+  ],
+  "timestamp": "2025-12-23T19:24:11+00:00"
+}
