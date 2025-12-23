@@ -1,15 +1,13 @@
 {
-  "name": "tkg-global-bank-v30",
-  "version": "30.0.0",
-  "main": "server.js",
+  "name": "tk-global-bank-ultimate-complete",
+  "version": "6.0.0",
+  "type": "module",
+  "main": "ultimate-complete-system.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node ultimate-complete-system.js"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5"
-  },
-  "engines": {
-    "node": "18.x"
   }
 }
