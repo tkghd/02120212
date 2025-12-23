@@ -16,7 +16,7 @@ function App() {
     { id: 'ai', label: '🤖 AI', icon: '🤖' }
   ];
 
-  return (
+  return (<>
     <UltimateRealTransferUI />
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
       {/* ヘッダー */}
@@ -128,7 +128,7 @@ function App() {
         </div>
       </footer>
     </div>
-  );
+  </>);
 }
 
 export default App;
