@@ -1,0 +1,6 @@
+<!doctype html><h1>TK GLOBAL BANK</h1><pre id=p></pre>
+<script>
+fetch('/api/investor/summary')
+.then(r=>r.json())
+.then(d=>p.textContent=JSON.stringify(d,null,2))
+</script>
