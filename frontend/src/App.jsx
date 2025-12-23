@@ -1,99 +1,130 @@
-import React from 'react';
-import CompleteFinancialPlatform from './components/CompleteFinancialPlatform';
-import ModernPaymentIntegration from './components/ModernPaymentIntegration';
+import React, { useState } from 'react';
 import AIAssistant from './components/AIAssistant';
 import UnifiedSystemDashboard from './components/UnifiedSystemDashboard';
+import ModernPaymentIntegration from './components/ModernPaymentIntegration';
+import RealBankingIntegration from './components/RealBankingIntegration';
+import CompleteFinancialPlatform from './components/CompleteFinancialPlatform';
 
 function App() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  const tabs = [
+    { id: 'dashboard', label: '🏠 ダッシュボード', icon: '🏠' },
+    { id: 'payments', label: '💳 決済', icon: '💳' },
+    { id: 'financial', label: '🏦 金融サービス', icon: '🏦' },
+    { id: 'ai', label: '🤖 AI', icon: '🤖' }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 py-8">
-      <div className="container mx-auto px-4">
-        {/* ヘッダー */}
-        <header className="text-center mb-12">
-          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-1 rounded-3xl inline-block mb-6">
-            <div className="bg-gray-900 px-12 py-6 rounded-3xl">
-              <h1 className="text-6xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+      {/* ヘッダー */}
+      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 shadow-2xl">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-black text-white">
                 🌐 TK Global Bank
               </h1>
+              <p className="text-blue-100 text-sm mt-1">
+                Complete Financial Platform
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+                🟢 ONLINE
+              </span>
+              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                🤖 AI
+              </span>
             </div>
           </div>
-          <p className="text-white text-2xl font-bold mb-2">
-            完全統合金融プラットフォーム
-          </p>
-          <p className="text-blue-300 text-lg">
-            REAL送金 • 金融ライセンス • グローバル送金 • 法人サービス • 収益化
-          </p>
-          <div className="mt-4 flex justify-center gap-3">
-            <span className="bg-green-500 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse">
-              🟢 ALL SYSTEMS ONLINE
-            </span>
-            <span className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-bold">
-              🤖 AI POWERED
-            </span>
-          </div>
-        </header>
-
-        {/* メインコンテンツ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          <AIAssistant />
-          <UnifiedSystemDashboard />
         </div>
+      </header>
 
-        {/* 完全金融プラットフォーム */}
-        <CompleteFinancialPlatform />
-
-        {/* 決済統合 */}
-        <div className="mt-12">
-          <ModernPaymentIntegration />
-        </div>
-
-        {/* フッター */}
-        <footer className="mt-16">
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-10 shadow-2xl text-white">
-            <h3 className="text-3xl font-bold text-center mb-6">
-              🚀 稼働中の全システムモジュール
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
-              {[
-                { icon: '🏢', label: 'Corp' },
-                { icon: '💸', label: 'Send' },
-                { icon: '🏧', label: 'ATM' },
-                { icon: '💳', label: 'Cards' },
-                { icon: '₿', label: 'Crypto' },
-                { icon: '📱', label: 'PWA' },
-                { icon: '🌐', label: 'Web' },
-                { icon: '💾', label: 'Data' },
-                { icon: '🎨', label: 'UI/UX' },
-                { icon: '❤️', label: 'Health' },
-                { icon: '🔌', label: 'Real API' },
-                { icon: '⚖️', label: 'Legal' },
-                { icon: '📊', label: 'Audit' },
-                { icon: '🔑', label: 'License' },
-                { icon: '👨‍💼', label: 'Admin' }
-              ].map((module, idx) => (
-                <div
-                  key={idx}
-                  className="bg-green-500/20 border-2 border-green-500 rounded-xl p-4 text-center hover:bg-green-500/30 transition"
-                >
-                  <div className="text-3xl mb-2">{module.icon}</div>
-                  <div className="text-sm font-bold">{module.label}</div>
-                  <div className="text-xs text-green-300 mt-1">ONLINE</div>
-                </div>
-              ))}
-            </div>
-            <div className="text-center">
-              <a
-                href="https://hopeful-liberation-production-9d00.up.railway.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl transition text-lg"
+      {/* タブナビゲーション */}
+      <nav className="bg-gray-800/50 backdrop-blur-lg border-b border-gray-700">
+        <div className="container mx-auto px-4">
+          <div className="flex gap-2 overflow-x-auto py-4">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-6 py-3 rounded-lg font-semibold transition whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
               >
-                🚂 Backend API Dashboard →
-              </a>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      {/* メインコンテンツ */}
+      <main className="container mx-auto px-4 py-8">
+        {activeTab === 'dashboard' && (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <UnifiedSystemDashboard />
+              <RealBankingIntegration />
             </div>
           </div>
-        </footer>
-      </div>
+        )}
+
+        {activeTab === 'payments' && (
+          <div className="space-y-8">
+            <ModernPaymentIntegration />
+          </div>
+        )}
+
+        {activeTab === 'financial' && (
+          <div className="space-y-8">
+            <CompleteFinancialPlatform />
+          </div>
+        )}
+
+        {activeTab === 'ai' && (
+          <div className="space-y-8">
+            <AIAssistant />
+          </div>
+        )}
+      </main>
+
+      {/* フッター */}
+      <footer className="bg-gray-800/50 backdrop-blur-lg border-t border-gray-700 mt-16">
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+            {[
+              '🏢 Corp', '💸 Send', '🏧 ATM', '💳 Cards', '₿ Crypto',
+              '📱 PWA', '🌐 Web', '💾 Data', '🎨 UI/UX', '❤️ Health',
+              '🔌 API', '⚖️ Legal', '📊 Audit', '🔑 License', '👨‍💼 Admin'
+            ].map((module, idx) => (
+              <div
+                key={idx}
+                className="bg-green-500/20 border border-green-500 rounded-lg p-3 text-center text-white text-xs font-bold"
+              >
+                <div className="mb-1">{module}</div>
+                <div className="text-green-300 text-[10px]">ONLINE</div>
+              </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <a
+              href="https://hopeful-liberation-production-9d00.up.railway.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 font-semibold"
+            >
+              🚂 Backend API →
+            </a>
+            <p className="text-gray-500 text-sm mt-2">
+              © 2025 TK Global Bank. All systems operational.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
