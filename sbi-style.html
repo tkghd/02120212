@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TKG BANK - スマート認証NEO</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%);
+      min-height: 100vh;
+      color: white;
+    }
+    
+    /* ヘッダー */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: rgba(0,0,0,0.2);
+    }
+    
+    .status-bar {
+      display: flex;
+      gap: 8px;
+      font-size: 14px;
+    }
+    
+    .header-icons {
+      display: flex;
+      gap: 20px;
+      font-size: 24px;
+    }
+    
+    /* スマート認証バッジ */
+    .smart-auth-badge {
+      background: #22c55e;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    /* メイン残高表示 */
+    .balance-section {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .balance-label {
+      font-size: 18px;
+      opacity: 0.9;
+      margin-bottom: 12px;
+    }
+    
+    .balance-amount {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .balance-currency {
+      font-size: 32px;
+      opacity: 0.9;
+    }
+    
+    /* ページネーション */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 20px 0;
+    }
+    
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      transition: all 0.3s;
+    }
+    
+    .dot.active {
+      background: white;
+      width: 24px;
+      border-radius: 4px;
+    }
+    
+    /* ランク情報 */
+    .rank-info {
+      display: flex;
+      justify-content: space-around;
+      background: rgba(255,255,255,0.1);
+      padding: 16px;
+      margin: 0 20px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+    
+    .rank-item {
+      text-align: center;
+    }
+    
+    .rank-number {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    /* メニューグリッド */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      padding: 30px 20px;
+    }
+    
+    .menu-item {
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+      position: relative;
+    }
+    
+    .menu-item:active {
+      transform: scale(0.95);
+    }
+    
+    .menu-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+      font-size: 32px;
+      position: relative;
+    }
+    
+    .notification-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 16px;
+      height: 16px;
+      background: #ef4444;
+      border-radius: 50%;
+      border: 2px solid #1e3a8a;
+    }
+    
+    .menu-label {
+      font-size: 13px;
+      opacity: 0.95;
+    }
+    
+    /* 下部拡張メニュー */
+    .expand-button {
+      text-align: center;
+      padding: 16px;
+      font-size: 32px;
+      cursor: pointer;
+    }
+    
+    .extra-menu {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      padding: 0 20px 30px;
+    }
+    
+    /* ボトムナビ */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0 20px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .nav-item {
+      text-align: center;
+      color: #6b7280;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    
+    .nav-item.active {
+      color: #22c55e;
+    }
+    
+    .nav-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- ヘッダー -->
+  <div class="header">
+    <div class="status-bar">
+      <span>📶</span>
+      <span>au</span>
+      <span>📡</span>
+    </div>
+    <div style="font-size: 16px;">22:24</div>
+    <div class="header-icons">
+      <span>🔍</span>
+      <span>☰</span>
+    </div>
+  </div>
+  
+  <!-- スマート認証バッジ -->
+  <div class="smart-auth-badge">
+    <span>🔐</span>
+    <span>スマート認証NEO</span>
+  </div>
+  
+  <!-- 残高表示 -->
+  <div class="balance-section">
+    <div class="balance-label">お預入れ合計</div>
+    <div>
+      <span class="balance-amount" id="balance">1</span>
+      <span class="balance-currency">万</span>
+    </div>
+    <div style="font-size: 18px; margin-top: 8px;">
+      <span id="balanceYen">3360</span> 円
+    </div>
+  </div>
+  
+  <!-- ページネーション -->
+  <div class="pagination">
+    <div class="dot active"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+  
+  <!-- ランク情報 -->
+  <div class="rank-info">
+    <div class="rank-item">
+      <div>ランク <span class="rank-number">3</span></div>
+    </div>
+    <div class="rank-item">
+      <div>ATM出金無料 <span class="rank-number">7</span></div>
+    </div>
+    <div class="rank-item">
+      <div>他行宛振込無料 <span class="rank-number">7</span></div>
+    </div>
+  </div>
+  
+  <!-- メインメニュー -->
+  <div class="menu-grid">
+    <div class="menu-item" onclick="openATM()">
+      <div class="menu-icon">
+        <span>🏧</span>
+        <div class="notification-badge"></div>
+      </div>
+      <div class="menu-label">アプリでATM</div>
+    </div>
+    
+    <div class="menu-item" onclick="openCalc()">
+      <div class="menu-icon">🧮</div>
+      <div class="menu-label">残高照会</div>
+    </div>
+    
+    <div class="menu-item" onclick="openStatement()">
+      <div class="menu-icon">📄</div>
+      <div class="menu-label">入出金明細</div>
+    </div>
+    
+    <div class="menu-item" onclick="openTransfer()">
+      <div class="menu-icon">📮</div>
+      <div class="menu-label">振込</div>
+    </div>
+    
+    <div class="menu-item" onclick="openTransferSchedule()">
+      <div class="menu-icon">🔄</div>
+      <div class="menu-label">振替</div>
+    </div>
+    
+    <div class="menu-item" onclick="openProfile()">
+      <div class="menu-icon">👤</div>
+      <div class="menu-label">お客さま情報</div>
+    </div>
+    
+    <div class="menu-item" onclick="openPoints()">
+      <div class="menu-icon">🅿️</div>
+      <div class="menu-label">ポイント</div>
+    </div>
+    
+    <div class="menu-item" onclick="openDebitCard()">
+      <div class="menu-icon">
+        💳
+        <div class="notification-badge"></div>
+      </div>
+      <div class="menu-label">デビットカード</div>
+    </div>
+  </div>
+  
+  <!-- 拡張ボタン -->
+  <div class="expand-button" onclick="toggleExtra()">
+    <span id="expandIcon">⌃</span>
+  </div>
+  
+  <!-- 追加メニュー -->
+  <div class="extra-menu" id="extraMenu" style="display: none;">
+    <div class="menu-item" onclick="openFX()">
+      <div class="menu-icon">
+        <span>💱</span>
+        <div class="notification-badge"></div>
+      </div>
+      <div class="menu-label">外貨普通</div>
+    </div>
+    
+    <div class="menu-item" onclick="openDeposit()">
+      <div class="menu-icon">🏦</div>
+      <div class="menu-label">純金積立</div>
+    </div>
+  </div>
+  
+  <!-- ボトムナビゲーション -->
+  <div class="bottom-nav">
+    <div class="nav-item active">
+      <div class="nav-icon">🏠</div>
+      <div>ホーム</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">💴</div>
+      <div>振込・振替</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">¥</div>
+      <div>口座情報</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🎁</div>
+      <div>キャンペーン等</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">☰</div>
+      <div>メニュー</div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://hopeful-liberation-production-9d00.up.railway.app';
+    
+    // 残高更新
+    async function updateBalance() {
+      try {
+        const res = await fetch(`${API_BASE}/api/balance/SOVEREIGN`);
+        const data = await res.json();
+        const man = Math.floor(data.balance / 10000);
+        const yen = data.balance % 10000;
+        document.getElementById('balance').textContent = man.toLocaleString();
+        document.getElementById('balanceYen').textContent = yen.toLocaleString();
+      } catch (e) {
+        console.log('Balance fetch failed');
+      }
+    }
+    
+    // 拡張メニュー表示切替
+    function toggleExtra() {
+      const menu = document.getElementById('extraMenu');
+      const icon = document.getElementById('expandIcon');
+      if (menu.style.display === 'none') {
+        menu.style.display = 'grid';
+        icon.textContent = '⌄';
+      } else {
+        menu.style.display = 'none';
+        icon.textContent = '⌃';
+      }
+    }
+    
+    // 各機能
+    function openATM() {
+      alert('🏧 ATM機能を開きます');
+    }
+    function openCalc() {
+      updateBalance();
+    }
+    function openStatement() {
+      alert('📄 入出金明細を開きます');
+    }
+    function openTransfer() {
+      window.location.href = '/?access=sovereign#transfer';
+    }
+    function openTransferSchedule() {
+      alert('🔄 振替機能を開きます');
+    }
+    function openProfile() {
+      alert('👤 お客さま情報を開きます');
+    }
+    function openPoints() {
+      alert('🅿️ ポイント情報を開きます');
+    }
+    function openDebitCard() {
+      alert('💳 デビットカード管理を開きます');
+    }
+    function openFX() {
+      alert('💱 外貨普通預金を開きます');
+    }
+    function openDeposit() {
+      alert('🏦 純金積立を開きます');
+    }
+    
+    // 初期化
+    updateBalance();
+    setInterval(updateBalance, 30000);
+  </script>
+</body>
+</html>
