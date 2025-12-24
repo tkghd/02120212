@@ -1,0 +1,22 @@
+[
+  {
+    "module": "ATM",
+    "status": "OK"
+  },
+  {
+    "module": "Crypto",
+    "status": "OK"
+  },
+  {
+    "module": "BIN",
+    "status": "OK"
+  },
+  {
+    "module": "PayPay",
+    "status": "OK"
+  },
+  {
+    "module": "KOTRA",
+    "status": "OK"
+  }
+]

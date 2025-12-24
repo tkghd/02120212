@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ATM1",
+    "camera": true
+  },
+  {
+    "id": "ATM2",
+    "camera": true
+  },
+  {
+    "id": "ATM3",
+    "camera": true
+  },
+  {
+    "id": "ATM4",
+    "camera": true
+  }
+]

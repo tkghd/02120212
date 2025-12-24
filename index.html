@@ -1,20 +1,22 @@
-<!doctype html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#8b5cf6" />
-    <link rel="manifest" href="/manifest.json" />
-    <title>TKG Global Bank - National Financial OS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js');
-      }
-    </script>
-  </body>
-</html>
+<!doctype html><html><body>
+<h2>TKG Bank</h2>
+<div id=b>---</div>
+<input id=a placeholder="送金額"><button onclick=t()>送金</button>
+<script>
+let token,refresh;
+async function login(){
+  const r=await fetch("/api/auth",{method:"POST",headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({address:"OWNER",signature:crypto("OWNERLOGIN")})});
+  ({token,refresh}=await r.json());balance();
+}
+async function balance(){
+  const r=await fetch("/api/balance",{headers:{Authorization:"Bearer "+token}});
+  document.getElementById("b").innerText=(await r.json()).balance;
+}
+async function t(){
+  await fetch("/api/transfer",{method:"POST",headers:{'Content-Type':'application/json',Authorization:"Bearer "+token},
+  body:JSON.stringify({amount:+a.value})});balance();
+}
+function crypto(s){return [...s].reduce((a,c)=>a+c.charCodeAt(0),"")}
+login();
+</script></body></html>
