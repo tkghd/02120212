@@ -1,16 +1,4 @@
 {
   "name": "tk-global-bank",
-  "version": 2,
-  "builds": [
-    {
-      "src": "pages/**/*.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/pages/api/$1"
-    }
-  ]
+  "version": 2
 }
