@@ -540,3 +540,33 @@ app.listen(PORT, '0.0.0.0', () => {
 ╚═══════════════════════════════════════════════════════════════╝
   `);
 });
+# UI確認
+curl -I https://tkghd.vercel.app | grep HTTP
+curl -I https://tkghd.vercel.app/?access=sovereign | grep HTTP
+
+# API確認
+curl -s https://tk-global-bank-alpha.vercel.app/api/health | jq
+
+# 送金テスト
+curl -X POST https://tk-global-bank-alpha.vercel.app/api/test-real-transfer -H "Content-Type: application/json" -d '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJfMTE5MDIxMiIsImVtYWlsIjoib3duZXJAdGtnaGQuZ2xvYmFsIiwicm9sZSI6Im93bmVyIiwiaWF0IjoxNzY2Mjc3OTU2LCJleHAiOjE3NjY4ODI3NTZ9.nWJL8NOySwWj2xEZ17P4KLJziNTFrmmdUG-CbF6ME6M","bank":"sbi","amount":10000}' | jq
+cd ~/02120212 && npm install && npm run build && git add -A && git commit -m "🚀 本番フル稼働" && git push origin main && railway up --detach && vercel --prod
+
+# UI確認
+curl -I https://tkghd.vercel.app | grep HTTP
+curl -I https://tkghd.vercel.app/?access=sovereign | grep HTTP
+
+# API確認
+curl -s https://tk-global-bank-alpha.vercel.app/api/health | jq
+
+# 送金テスト
+curl -X POST https://tk-global-bank-alpha.vercel.app/api/test-real-transfer -H "Content-Type: application/json" -d '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJfMTE5MDIxMiIsImVtYWlsIjoib3duZXJAdGtnaGQuZ2xvYmFsIiwicm9sZSI6Im93bmVyIiwiaWF0IjoxNzY2Mjc3OTU2LCJleHAiOjE3NjY4ODI3NTZ9.nWJL8NOySwWj2xEZ17P4KLJziNTFrmmdUG-CbF6ME6M","bank":"sbi","amount":10000}' | jq
+
+cd ~/02120212 && cat > .env.production << 'ENV' && npm i -D @next/bundle-analyzer && npm i web3 ethers @metamask/detect-provider stripe socket.io-client redis ioredis prisma @prisma/client && npm run build && git add -A && git commit -m "🌌 極限拡張本番" && git push origin main && railway up --detach && vercel --prod --force
+NODE_ENV=production
+NEXT_PUBLIC_API_URL=https://tk-global-bank-alpha.vercel.app
+NEXT_PUBLIC_RAILWAY_URL=https://hopeful-liberation-production-9d00.up.railway.app
+NEXT_PUBLIC_ENABLE_WEB3=true
+NEXT_PUBLIC_ENABLE_REAL_TRANSFER=true
+JWT_SECRET=tkgbank-production-secret-2025-secure-key
+REAL_TRANSFER_ENABLED=true
+ENV
