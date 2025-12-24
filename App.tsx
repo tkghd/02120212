@@ -5,6 +5,7 @@ import { FloatingTransferButton } from './components/FloatingTransferButton';
 import { StatusDashboard } from './components/StatusDashboard';
 import { BackendStatus } from './components/BackendStatus';
 import { SovereignAccess } from './components/SovereignAccess';
+import { MultiAIChat } from './components/MultiAIChat';
 import { TransferAPIIntegration } from './components/TransferAPIIntegration';
 import { LoginScreen } from './components/LoginScreen';
 import { AssetsView } from './components/AssetsView';
