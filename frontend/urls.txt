@@ -1,7 +1,0 @@
-https://frontend-t-global.vercel.app
-https://frontend-nwf7p47vd-t-global.vercel.app
-https://tkghd.vercel.app
-https://your-backend.up.railway.app/health
-https://your-api.up.railway.app/status
-https://supabase-project.supabase.co
-https://api.stripe.com
