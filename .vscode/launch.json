@@ -1,0 +1,142 @@
+{
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "name": "Attach to Chrome",
+            "port": 9222,
+            "request": "attach",
+            "type": "chrome",
+            "webRoot": "
+            "
+        },
+
+
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "プログラムの起動",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "$import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
+import RedisStore from 'rate-limit-redis' // optional
+import redis from 'redis'
+
+// basic security
+app.use(helmet())
+app.use(express.json({ limit: '100kb' }))
+
+// CORS: whitelist only
+const allowed = ['https://tkghd.vercel.app', 'https://tkghd-api-azure.vercel.app']
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  if (allowed.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin)
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  next()
+})
+
+// simple in-memory rate limit (replace with RedisStore for clustered)
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+app.use('/api/', limiter)
+// middleware/auth.js
+export function requireAuth(req, res, next) {
+  const auth = req.headers.authorization
+  if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'unauthorized' })
+  // verify JWT (use jsonwebtoken + publicKey or secret from env)
+  next()
+}
+
+export function requireHmac(req, res, next) {
+  const signature = req.headers['x-tkg-signature'] || ''
+  const payload = JSON.stringify(req.body || {})
+  const secret = process.env.WEBHOOK_SECRET || ''
+  const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex')
+  if (signature !== expected) return res.status(401).json({ error: 'invalid signature' })
+  next()
+}
+  import pino from 'pino'
+const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
+
+// audit function (append-only)
+import fs from 'fs'
+function auditLog(event) {
+  const line = JSON.stringify({ ts: new Date().toISOString(), ...event }) + "\n"
+  fs.appendFileSync(process.env.AUDIT_LOG_PATH || '/var/log/tkg_audit.log', line, { mode: 0o600 })
+}
+
+// usage in transfer endpoint:
+auditLog({ action: 'transfer_execute_request', user: req.body.from, amount: req.body.amount, txid })
+logger.info({ txid, user: req.body.from }, 'transfer executed')
+import { z } from 'zod'
+const TransferSchema = z.object({
+  from: z.string().min(1),
+  to: z.string().min(1),
+  amount: z.number().positive(),
+  currency: z.string().length(3).optional()
+})
+function validate(schema) {
+  return (req, res, next) => {
+    try {
+      req.body = schema.parse(req.body)
+      next()
+    } catch (e) {
+      return res.status(400).json({ error: 'invalid_payload', details: e.errors })
+    }
+  }
+}
+app.post('/api/transfer/execute', validate(TransferSchema), handler)
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: node-version: 20
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test --if-present
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Railway
+        run: |
+          echo "$RAILWAY_TOKEN" > /tmp/railway_token
+          # use railway CLI or REST API here; keep token in GitHub Secrets
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          
+          {workspaceFolder}/index.js"
+        
+        
+        function featureEnabled(name) {
+  return (req, res, next) => {
+    const flags = JSON.parse(process.env.FEATURE_FLAGS || '{}')
+    if (flags[name]) return next()
+    return res.status(404).json({ error: 'feature_disabled' })
+  }
+}  {workspaceFolder}/index.js"
+        }
+    ]
+}
