@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TK Global Execute</title>
+  <style>
+    body { margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: system-ui; }
+    #executeBtn { width: 100%; padding: 30px; font-size: 28px; font-weight: bold; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 15px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    #executeBtn:hover { transform: scale(1.05); }
+    #log { margin-top: 20px; max-height: 500px; overflow: auto; background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; color: #fff; }
+    .success { color: #4ade80; }
+    .error { color: #f87171; }
+    pre { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <button id="executeBtn">🔥 EXECUTE GLOBAL IMPACT</button>
+  <div id="log"></div>
+
+  <script>
+    const API_BASE = 'https://hopeful-liberation-production-9d00.up.railway.app';
+    
+    document.getElementById('executeBtn').onclick = async () => {
+      const log = document.getElementById('log');
+      log.innerHTML = '<h2>⚡ 実行中...</h2>';
+      
+      const apis = [
+        {name:"REAL国内送金", path:"/api/real-transfer/domestic", post:true, data:{amount:1000}},
+        {name:"REAL国際送金", path:"/api/real-transfer/international", post:true, data:{amount:1000}},
+        {name:"PayPay送金", path:"/api/v1/transfer/paypay", post:true, data:{amount:1000}},
+        {name:"KOTRA送金", path:"/api/v1/transfer/kotra", post:true, data:{amount:1000}},
+        {name:"Car資産", path:"/api/v1/assets/car", post:false},
+        {name:"Web3", path:"/api/v1/web3/status", post:false},
+        {name:"ATM", path:"/api/v1/atm/scan", post:true, data:{auth:"scan"}},
+        {name:"Claude AI", path:"/api/ai/claude", post:true, data:{message:"Execute"}},
+        {name:"法人", path:"/api/corporate/entities", post:false},
+        {name:"ライセンス", path:"/api/licenses/all", post:false}
+      ];
+      
+      for(const ep of apis){
+        try{
+          const res = ep.post 
+            ? await fetch(API_BASE + ep.path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(ep.data)})
+            : await fetch(API_BASE + ep.path);
+          const json = await res.json();
+          log.innerHTML += `<div class="success">✅ ${ep.name}: <pre>${JSON.stringify(json, null, 2)}</pre></div>`;
+        }catch(e){
+          log.innerHTML += `<div class="error">⚠ ${ep.name}: ${e.message}</div>`;
+        }
+        log.scrollTop = log.scrollHeight;
+      }
+      
+      log.innerHTML += '<h2>🎉 全API実行完了！</h2>';
+    };
+  </script>
+</body>
+</html>
