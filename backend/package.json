@@ -1,17 +1,13 @@
 {
-  "name": "tkg-dominion",
-  "version": "80.0.0",
+  "name": "tkg-bank",
+  "version": "89.0.0",
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.22.1"
-  },
-  "description": "",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
 }
