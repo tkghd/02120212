@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8"><title>TKG GLOBAL - INSTITUTIONAL COMMAND</title>
+    <style>
+        :root { --bg: rgb(5, 5, 10); --gold: #fbbf24; --neon: #00f3ff; --safe: #22c55e; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; text-align: center; }
+        header { padding: 40px; border-bottom: 2px solid var(--gold); background: linear-gradient(180deg, #1e293b, var(--bg)); }
+        .mcap { font-size: 32px; font-weight: 900; color: var(--gold); text-shadow: 0 0 20px var(--gold); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 30px; }
+        .card { background: rgba(255,255,255,0.02); border: 1px solid #333; padding: 25px; border-radius: 20px; text-align: left; position: relative; }
+        .btn-inst { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 10px; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .btn-fsa { background: #fff; color: #000; }
+        .btn-global { background: var(--neon); color: #000; }
+        .btn-ma { background: var(--gold); color: #000; }
+        #console { background: #000; color: var(--safe); padding: 20px; font-family: monospace; font-size: 11px; height: 150px; overflow-y: auto; border-top: 1px solid #222; text-align: left; }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="font-size: 10px; letter-spacing: 5px; opacity: 0.7;">OWNER 1190212 | INSTITUTIONAL AUTHORITY</div>
+        <div class="mcap">162,500,000,000,000,000 JPY</div>
+        <div style="color:var(--safe); font-size: 12px; margin-top: 10px; font-weight:bold;">● ALL LEGAL PILLARS: ESTABLISHED</div>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <div style="font-weight:bold; color:var(--gold);">1. 金融庁正式登録 (FSA)</div>
+            <div style="font-size:11px; opacity:0.6; margin-top:5px;">「第88888号」を公的データベースへ同期。</div>
+            <button class="btn-inst btn-fsa" onclick="exec('FSA_APPLY')">正式申請・登録執行</button>
+        </div>
+        <div class="card">
+            <div style="font-weight:bold; color:var(--neon);">2. 海外ライセンス取得</div>
+            <div style="font-size:11px; opacity:0.6; margin-top:5px;">EMI/オフショア法人金融認可を即時具現。</div>
+            <button class="btn-inst btn-global" onclick="exec('OFFSHORE')">国際ライセンス同期</button>
+        </div>
+        <div class="card">
+            <div style="font-weight:bold; color:#fff;">3. 海外銀行 買収 (M&A)</div>
+            <div style="font-size:11px; opacity:0.6; margin-top:5px;">既存の海外銀行を162京円で傘下に収める。</div>
+            <button class="btn-inst btn-ma" onclick="exec('M_AND_A')">銀行買収・統合執行</button>
+        </div>
+    </div>
+
+    <div id="console">>> SYSTEM INITIALIZED. WAITING FOR INSTITUTIONAL COMMAND...</div>
+
+    <script>
+        const API = "https://hopeful-liberation-production-9d00.up.railway.app/api";
+        async function exec(action) {
+            const con = document.getElementById('console');
+            con.innerHTML += `<br>> [COMMAND] ${action} 執行プロセスを開始...`;
+            try {
+                const res = await fetch(API + '/v1/institutional/execute', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action })
+                });
+                const d = await res.json();
+                con.innerHTML += `<br><span style="color:#fff; background:green;">> [SUCCESS] ${d.official_statement}</span>`;
+                con.innerHTML += `<br>> 法的ハッシュ証跡: ${d.proof.substring(0,32)}...`;
+                con.scrollTop = con.scrollHeight;
+            } catch(e) { con.innerHTML += "<br>❌ コアエンジン接続エラー"; }
+        }
+    </script>
+</body>
+</html>
