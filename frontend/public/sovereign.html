@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>TKG - SOVEREIGN ACCESS</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
+        .terminal { background: #0a0a0a; border: 2px solid #0f0; padding: 30px; border-radius: 10px; }
+        h1 { color: #fbbf24; text-shadow: 0 0 10px #fbbf24; }
+        button { background: #fbbf24; color: #000; padding: 15px 30px; font-weight: bold; cursor: pointer; }
+        #output { margin-top: 20px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <h1>👑 SOVEREIGN ACCESS - USER 1190212</h1>
+        <p>162,500,000,000,000,000 JPY | 532 Entities | 5 Licenses</p>
+        <button onclick="executeAll()">EXECUTE ALL SYSTEMS</button>
+        <div id="output">>> Waiting for command...</div>
+    </div>
+    <script>
+        const API = 'https://hopeful-liberation-production-9d00.up.railway.app';
+        async function executeAll() {
+            const output = document.getElementById('output');
+            output.innerHTML = '>>> Executing all systems...\n';
+            
+            const endpoints = [
+                { name: 'Health', path: '/health' },
+                { name: 'Keys', path: '/api/keys/instant' },
+                { name: 'Transfer', path: '/api/instant-transfer', post: true, data: {amount:1000000,to:'TEST',provider:'zengin'} }
+            ];
+
+            for (const ep of endpoints) {
+                try {
+                    const res = ep.post 
+                        ? await fetch(API + ep.path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(ep.data)})
+                        : await fetch(API + ep.path);
+                    const data = await res.json();
+                    output.innerHTML += `✅ ${ep.name}: OK\n${JSON.stringify(data, null, 2)}\n\n`;
+                } catch(e) {
+                    output.innerHTML += `❌ ${ep.name}: ${e.message}\n`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
