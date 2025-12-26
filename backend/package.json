@@ -1,7 +1,20 @@
 {
-  "name": "tkg",
-  "version": "73.2.0",
+  "name": "tkg-full-system",
+  "version": "74.0.0",
+  "type": "module",
   "main": "server.js",
-  "scripts": {"start": "node server.js"},
-  "dependencies": {"express": "^4.18.2", "cors": "^2.8.5"}
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "fs-extra": "^11.2.0",
+    "openai": "^4.24.1",
+    "ethers": "^6.10.0",
+    "pdfkit": "^0.13.0"
+  }
 }
