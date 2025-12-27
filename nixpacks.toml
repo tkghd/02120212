@@ -2,10 +2,7 @@
 nixPkgs = ["nodejs-18_x"]
 
 [phases.install]
-cmds = ["npm install"]
-
-[phases.build]
-cmds = ["npm run build"]
+cmds = ["cd backend && npm install"]
 
 [start]
-cmd = "npm start"
+cmd = "cd backend && node server.js"
