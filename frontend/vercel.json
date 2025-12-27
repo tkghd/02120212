@@ -1,10 +1,7 @@
 {
   "version": 2,
-  "routes": [
-    { "src": "/(.*)", "dest": "/public/$1" }
-  ],
-  "redirects": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/?access=sovereign", "destination": "/sovereign.html" }
-  ]
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://tkghd-api-azure.vercel.app",
+    "NEXT_PUBLIC_AZURE_API_URL": "https://tkghd-api-azure.vercel.app"
+  }
 }

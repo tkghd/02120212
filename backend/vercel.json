@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
+    }
+  ],
+  "env": {
+    "ENV": "production",
+    "FRONTEND_URL": "https://t-global.vercel.app",
+    "AZURE_API_URL": "https://tkghd-api-azure.vercel.app"
+  }
+}
