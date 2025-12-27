@@ -1,6 +1,6 @@
 {
-  "name": "tkg-bank-backend",
-  "version": "36.0.0",
+  "name": "tkg-backend",
+  "version": "96.0.0",
   "type": "module",
   "scripts": {
     "start": "node server.js"

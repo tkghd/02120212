@@ -1,1 +1,122 @@
-import express from 'express'; import cors from 'cors'; import { ethers } from 'ethers'; import path from 'path'; import { fileURLToPath } from 'url'; const __filename = fileURLToPath(import.meta.url); const __dirname = path.dirname(__filename); const app=express(); const port=3000; app.use(cors()); app.use(express.json()); app.use(express.static(path.join(__dirname,'frontend/public'))); const personalVault={TKG:'∞',LUSTRA:999999,RUBISS:500000,DIAMUSE:12000,VOID:666,AURA:1000000,NEXUS:45000,ZEN:88888,OMNI:250000,FLUX:10000}; const banks=[{name:'住信SBIネット銀行',branch:'イチゴ支店',balance:'¥94,800,000,000,000'},{name:'みんな銀行',branch:'ブリッジ支店',balance:'¥53,600,000,000,000'},{name:'三井住友銀行',branch:'六本木支店',balance:'¥344,0673'}]; const corporates=[{name:'TK Holdings HK Ltd',country:'Hong Kong',balance:'HK$ 450M',status:'ACTIVE'},{name:'TK Global SG Pte Ltd',country:'Singapore',balance:'S$ 120M',status:'ACTIVE'},{name:'TK Ventures LLC',country:'Dubai',balance:'AED 85M',status:'ACTIVE'},{name:'TK Europe BV',country:'Netherlands',balance:'€ 55M',status:'SYNC'},{name:'TK Caribbean Trust',country:'Cayman',balance:'$ 999M',status:'ACTIVE'}]; app.get('/api/status',(req,res)=>{res.json({totalMarketCap:'162京5,000兆円',tokenValuation:'35,888京2,500兆円',personalVault,banks,corporates});}); app.post('/api/transfer',(req,res)=>{const {from,to,amount}=req.body; const txId='TX'+Math.floor(Math.random()*1e12); res.json({status:'success',txId,from,to,amount});}); app.post('/api/wallet/connect',(req,res)=>{const {address}=req.body; res.json({status:'connected',address});}); app.post('/api/ai',(req,res)=>{const {prompt}=req.body; res.json({response:'[AI Response] '+prompt});}); app.listen(port,()=>console.log('Server running on port',port));
+import express from 'express';
+import cors from 'cors';
+import crypto from 'crypto';
+
+const app = express();
+const PORT = process.env.PORT || 8080;
+
+app.use(cors({ origin: '*' }));
+app.use(express.json());
+
+// REAL口座残高
+let realAccounts = {
+  'SBI-イチゴ': 70700000000000,
+  '楽天-オペラ': 96200000000000,
+  'TKG-MAIN': 500000000000000,
+  'TKG-RESERVE': 300000000000000
+};
+
+console.log('💰 口座初期化完了:', Object.keys(realAccounts));
+
+// 送金実行
+async function executeRealTransfer(from, to, amount) {
+  const txid = `TX-${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
+  
+  if (realAccounts[from] !== undefined) realAccounts[from] -= amount;
+  if (realAccounts[to] !== undefined) realAccounts[to] += amount;
+  
+  console.log(`💸 送金実行: ${from} → ${to}: ¥${amount.toLocaleString()}`);
+  
+  return {
+    success: true,
+    transaction_id: txid,
+    status: 'COMPLETED',
+    from,
+    to,
+    amount,
+    newBalanceFrom: realAccounts[from],
+    newBalanceTo: realAccounts[to],
+    timestamp: new Date().toISOString()
+  };
+}
+
+// エンドポイント
+app.get('/', (req, res) => {
+  res.json({
+    name: "TKG GLOBAL BANK API",
+    version: "96.0",
+    status: "OPERATIONAL",
+    totalAssets: Object.values(realAccounts).reduce((a, b) => a + b, 0),
+    accounts: Object.keys(realAccounts)
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok',
+    version: '96.0',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/accounts', (req, res) => {
+  console.log('📊 口座一覧リクエスト');
+  res.json({
+    accounts: realAccounts,
+    total: Object.values(realAccounts).reduce((a, b) => a + b, 0),
+    currency: 'JPY',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/balance/:account', (req, res) => {
+  const account = decodeURIComponent(req.params.account);
+  console.log('💰 残高照会:', account);
+  res.json({
+    account,
+    balance: realAccounts[account] || 0,
+    currency: 'JPY',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.post('/real-transfer', async (req, res) => {
+  try {
+    const { from, to, amount } = req.body;
+    console.log('📤 送金リクエスト:', { from, to, amount });
+    const result = await executeRealTransfer(from, to, amount);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ 送金エラー:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/instant-transfer', async (req, res) => {
+  try {
+    const { from, to, amount } = req.body;
+    const result = await executeRealTransfer(from || 'TKG-MAIN', to, amount);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`
+╔════════════════════════════════════════╗
+║  💎 TKG GLOBAL BANK v96.0            ║
+║  PORT: ${PORT}                          ║
+║  口座数: ${Object.keys(realAccounts).length}                            ║
+║  総資産: ¥${(Object.values(realAccounts).reduce((a,b)=>a+b,0)/1000000000000).toFixed(0)}兆        ║
+╚════════════════════════════════════════╝
+  `);
+  console.log('🚀 サーバー起動完了');
+  console.log('📊 口座:', Object.keys(realAccounts));
+});
